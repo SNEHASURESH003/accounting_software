@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block 'content' %}
+<h2 style="text-align: center; margin-top: 20px;">Revenue by Phase</h2>
+
+<style>
+  table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+  }
+
+  thead {
+    background-color: #f8f9fa;
+  }
+
+  th, td {
+    padding: 12px 16px;
+    border: 1px solid #ccc;
+    text-align: left;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+
+  tr:hover {
+    background-color: #e9ecef;
+  }
+
+  td[colspan] {
+    text-align: center;
+    font-style: italic;
+    color: #777;
+  }
+</style>
+
+<table>
+  <thead>
+    <tr>
+      <th>Contract</th>
+      <th>Phase</th>
+      <th>Revenue</th>
+      <th>Contract Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if phases %}
+      {% for phase in phases %}
+        <tr>
+          <td>{{ phase.contract.name }}</td>
+          <td>{{ phase.name }}</td>
+          <td>₹{{ phase.revenue }}</td>
+          <td>
+  <a href="{% url 'contract_detail' phase.contract.id %}">
+    {{ phase.contract.name }}
+  </a>
+</td>
+
+        </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan="3">No phases available.</td>
+      </tr>
+    {% endif %}
+    <tr class="fw-bold">
+  <td colspan="2">Total</td>
+  <td>₹{{ total_revenue }}</td>
+</tr>
+
+  </tbody>
+</table>
+{% endblock %}

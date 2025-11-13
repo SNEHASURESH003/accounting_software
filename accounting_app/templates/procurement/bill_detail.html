@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Bill {{ object.number }}{% endblock %}
+
+{% block 'content' %}
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      media="all">
+
+<style>
+  /* reserve space for the footer so it won't overlap on print */
+  :root { --footer-height: 160px; } /* will be auto-set to real footer height */
+
+  .page-title {
+    font-size: 28px; font-weight: 700; margin-bottom: 20px; color: #111827;
+  }
+  .card {
+    border: none; border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    overflow: hidden; margin-bottom: 1.5rem;
+  }
+  .card-header {
+    background: #f9fafb; font-weight: 600; font-size: 15px; padding: 14px 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .table th {
+    font-size: 14px; font-weight: 600; color: #4b5563; background: #f3f4f6; border-bottom: none;
+  }
+  .table td { font-size: 15px; color: #374151; }
+  .info-table th { width: 180px; font-weight: 600; color: #6b7280; }
+
+  .btn { border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: 500; transition: .2s; }
+  .btn-gradient { background: linear-gradient(135deg,#4f46e5,#3b82f6); color:#fff; border:none; }
+  .btn-gradient:hover { opacity:.9; transform: translateY(-1px); }
+
+  /* wrap page content so printed footer doesn't cover it */
+  .bill-sheet { padding-bottom: var(--footer-height); }
+
+  /* ===================== PRINT ===================== */
+  @media print {
+    @page { margin: 12mm; }
+    body { background:#fff !important; }
+
+    /* hide site chrome + any control rows marked no-print */
+    header, .site-header, .navbar, .sidebar, .topbar, .app-header, .no-print {
+      display: none !important;
+    }
+
+    .card { box-shadow:none !important; border:1px solid #e5e7eb; }
+    .table th, .table td { border:1px solid #cfd8dc !important; }
+    .table thead th { background:#eef2f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    /* Show your base footer and stick it to bottom on paper */
+    footer, .site-footer {
+      position: fixed !important;
+      bottom: 0; left: 0; right: 0;
+      display: block !important; visibility: visible !important;
+      z-index: 9999; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .bill-sheet { padding-bottom: var(--footer-height) !important; }
+
+    /* Fix white circular social badges in footer (icons only) */
+    footer .social a, footer .social .btn, footer .social .circle,
+    .site-footer .social a, .site-footer .social .btn, .site-footer .social .circle {
+      background: transparent !important; box-shadow:none !important; border:0 !important;
+    }
+    footer .social i, footer .social svg,
+    .site-footer .social i, .site-footer .social svg {
+      display:inline-block !important; color:#0d6efd !important; fill: currentColor !important;
+    }
+    footer .social li, footer .social a,
+    .site-footer .social li, .site-footer .social a {
+      padding:0 !important; margin:0 .6rem 0 0 !important;
+    }
+  }
+  /* =================== /PRINT ====================== */
+</style>
+
+<div class="bill-sheet">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title">🧾 Vendor Bill #{{ object.number }}</h1>
+    <div class="d-flex gap-2 no-print">
+      <a href="{% url 'bill_list' %}" class="btn btn-outline-secondary">⬅ Back to Bills</a>
+      <button type="button" class="btn btn-gradient" onclick="window.print()">🖨️ Print Bill</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">📌 Bill Details</div>
+    <div class="table-responsive">
+      <table class="table mb-0 info-table">
+        <tbody>
+          <tr>
+            <th>Total</th>
+            <td><strong>{{ object.total|floatformat:2 }} {{ object.currency.code }}</strong></td>
+          </tr>
+          {% if object.po %}
+          <tr>
+            <th>Linked PO</th>
+            <td>
+              <a href="{% url 'po_detail' pk=object.po.pk %}" class="text-decoration-none">
+                #{{ object.po.number }}
+              </a>
+            </td>
+          </tr>
+          {% endif %}
+          <tr><th>Created</th><td>{{ object.created_on }}</td></tr>
+          <tr><th>Updated</th><td>{{ object.updated_on }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-4 no-print">
+    {% if request.user.role == "accountant" %}
+      <a href="{% url 'bill_submit' pk=object.pk %}" class="btn btn-gradient">📤 Submit for Approval</a>
+    {% endif %}
+    <a href="{% url 'approvals_for_object' app_label='accounting_app' model_name='vendorbill' object_id=object.pk %}"
+       class="btn btn-outline-secondary">🗂 View Approvals</a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">📦 Bill Lines</div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th class="text-end">Quantity</th>
+            <th class="text-end">Unit Price</th>
+            <th class="text-end">Tax Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for li in object.lines.all %}
+          <tr>
+            <td>{{ li.description|default:li.po_line.description }}</td>
+            <td class="text-end">{{ li.qty }}</td>
+            <td class="text-end">{{ li.unit_price }}</td>
+            <td class="text-end">{{ li.tax_amount }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center text-muted py-4">No line items available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Match reserved space to the actual footer height (works for screen & print)
+  (function () {
+    function setFooterHeightVar() {
+      var f = document.querySelector('footer.site-footer, footer, .site-footer');
+      if (f) {
+        var h = f.offsetHeight || 160;
+        document.documentElement.style.setProperty('--footer-height', h + 'px');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', setFooterHeightVar);
+    window.addEventListener('resize', setFooterHeightVar);
+    if (window.matchMedia) {
+      var mql = window.matchMedia('print');
+      if (mql.addEventListener) mql.addEventListener('change', setFooterHeightVar);
+      else mql.addListener(setFooterHeightVar);
+    }
+    window.onbeforeprint = setFooterHeightVar;
+  })();
+</script>
+
+{% endblock %}
+

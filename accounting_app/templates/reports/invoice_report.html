@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+  }
+
+  .report-wrapper {
+    max-width: 900px;
+    margin: 30px auto;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    padding: 36px 44px;
+    border: 1px solid #d0d8e0;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  }
+
+  .report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+  }
+
+  h3, h4 { margin: 10px 0 16px; text-align: center; }
+
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .report-table th, .report-table td {
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+    background: #fff;
+  }
+
+  .report-table tbody tr:nth-child(odd) td { background: #fafafa; }
+
+  /* PRINT STYLES */
+  @media print {
+    header, .site-header, .navbar, .no-print, button { display: none !important; }
+
+    body * { visibility: hidden; }
+    #printableArea, #printableArea * { visibility: visible; }
+    #printableArea { position: absolute; left:0; top:0; width:100%; }
+
+    /* Remove horizontal scroll for long tables */
+    .table-responsive { overflow: visible !important; }
+
+    /* Ensure table columns fit in page */
+    .report-table { table-layout: auto; font-size: 12px; }
+
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+</style>
+
+<div class="report-wrapper" id="printableArea">
+
+  <div class="report-header">
+
+<div class="company-logo">
+      {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo" height="64"/>
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div><strong>Inventura Tech</strong></div>
+      {% endif %}
+    </div>
+
+    <button onclick="window.print()" class="no-print btn btn-primary btn-sm">🖨️ Print</button>
+  </div>
+
+  {# ===== Customer Invoices ===== #}
+  <h4>📄 Customer Invoices</h4>
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Client</th>
+        <th>Deal</th>
+        <th>Amount (₹)</th>
+        <th>Status</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for invoice in invoices %}
+      <tr>
+        <td>{{ invoice.id }}</td>
+        <td>{{ invoice.client.name|default:invoice.client }}</td>
+        <td>{{ invoice.deal.title|default:"—" }}</td>
+        <td>₹{{ invoice.total_amount|default_if_none:"0.00" }}</td>
+       <td>
+  {% if invoice.is_paid or invoice.status == "paid" %}
+    Paid
+  {% else %}
+    Unpaid
+  {% endif %}
+</td>
+
+        <td>{{ invoice.date|date:"d M Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-center text-muted">No invoices found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {# ===== Salary Invoices ===== #}
+  {% if salary_rows %}
+  <hr>
+  <h4>👤 Salary Invoices (Payroll){% if selected_period %} — {{ selected_period }}{% endif %}</h4>
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Employee</th>
+        <th>Period</th>
+        <th>Basic (₹)</th>
+        <th>HRA (₹)</th>
+        <th>Allowances (₹)</th>
+        <th>PF (₹)</th>
+        <th>ESI (₹)</th>
+        <th>TDS (₹)</th>
+        <th>Net Salary (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in salary_rows %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.name }}</td>
+        <td>{{ p.month|default:"—" }}</td>
+        <td>₹{{ p.basic_salary|floatformat:2 }}</td>
+        <td>₹{{ p.hra|floatformat:2 }}</td>
+        <td>₹{{ p.other_allowances|floatformat:2 }}</td>
+        <td>₹{{ p.pf|floatformat:2 }}</td>
+        <td>₹{{ p.esi|floatformat:2 }}</td>
+        <td>₹{{ p.tds_dynamic|floatformat:2 }}</td>
+        <td class="fw-bold text-success">₹{{ p.net_salary_dynamic|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="10" class="text-center text-muted">No salary records.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {# ===== Contractor Invoices ===== #}
+  {% if contractor_rows %}
+  <hr>
+  <h4>🧑‍🔧 Contractor Invoices{% if selected_period %} — {{ selected_period }}{% endif %}</h4>
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Contractor</th>
+        <th>Date</th>
+        <th>Amount (₹)</th>
+        <th>TDS (₹)</th>
+        <th>Filed Total (₹)</th>
+        <th>Deductions (₹)</th>
+        <th>Net Paid (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in contractor_rows %}
+      <tr>
+        <td>{{ c.id }}</td>
+        <td>{{ c.name }}</td>
+        <td>{{ c.date|date:"d M Y" }}</td>
+        <td>₹{{ c.amount|default_if_none:"0.00" }}</td>
+        <td>₹{{ c.tds_dynamic|floatformat:2 }}</td>
+        <td>₹{{ c.filed_total|floatformat:2 }}</td>
+        <td>₹{{ c.total_deductions_dynamic|floatformat:2 }}</td>
+        <td class="fw-bold text-success">₹{{ c.net_paid_dynamic|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="text-center text-muted">No contractor payments.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+</div>
+
+{% endblock %}

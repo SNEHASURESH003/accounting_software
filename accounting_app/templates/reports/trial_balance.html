@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  /* Hide global header/navbar on this page */
+  header, .site-header, .navbar, .topbar, .app-header, .main-header { display: none !important; }
+  body { padding-top: 0 !important; }
+
+  body { font-family: 'Poppins', 'Segoe UI', Arial, sans-serif; background-color: #d4d6dd; }
+
+  .content-wrapper { padding: 60px 15px; display: flex; justify-content: center; }
+  .card { background: #fff; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 24px rgba(0,0,0,.08); max-width: 1000px; width: 100%; }
+  .card-header { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1.2rem; }
+  h2 { font-weight: 600; font-size: 26px; margin: 0; }
+
+  .btn { font-weight: 500; color:#fff; border:none; border-radius:8px; padding:.55rem 1rem; text-decoration:none; display:inline-flex; align-items:center; gap:.4rem; transition:.2s; }
+  .btn-download, .btn-print-all, .btn-print-row { background:#1976d2; }
+  .btn:hover { filter: brightness(0.92); }
+  .btn-group-inline { display:flex; gap:.5rem; flex-wrap:wrap; }
+
+  .table-responsive { overflow-x:auto; }
+  table { width: 100%; border-collapse: collapse; margin:0; }
+  th, td { padding: .75rem 1rem; border: 1px solid #dee2e6; font-size: .95rem; }
+  .text-end { text-align: right; }
+  thead th { color:#fff; text-align:center; border-color: transparent; }
+  thead th:nth-child(1) { background: linear-gradient(to right, #6a1b9a, #3949ab); }
+  thead th:nth-child(2) { background: linear-gradient(to right, #3949ab, #1976d2); }
+  thead th:nth-child(3) { background: linear-gradient(to right, #1976d2, #0288d1); }
+  thead th:nth-child(4) { background: linear-gradient(to right, #0288d1, #26c6da); }
+  thead th:nth-child(5) { background: linear-gradient(to right, #26c6da, #58d7de); } /* Print column */
+
+  tbody tr:nth-child(odd) { background: #e0e0e0; }
+  tbody tr:nth-child(even) { background: #d6d6d6; }
+
+  .print-col { text-align: center; white-space: nowrap; }
+  .btn-print-row { padding:.45rem .7rem; border-radius: 6px; font-size:.85rem; }
+
+  .form-actions { display:flex; justify-content:center; padding: 0 15px 24px; }
+
+  /* PRINT styles */
+  @media print {
+    @page { margin: 0; }
+    body { margin:0; background:#fff !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+
+    /* ✅ SHOW the heading, hide only the buttons */
+    .card-header { 
+      display: flex !important; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: .6rem; 
+      border: none; 
+      box-shadow: none; 
+      padding: 0; 
+    }
+    .card-header .btn-group-inline { display: none !important; }
+
+    /* keep gradient headers */
+    thead th:nth-child(1) { background: linear-gradient(to right, #6a1b9a, #3949ab) !important; }
+    thead th:nth-child(2) { background: linear-gradient(to right, #3949ab, #1976d2) !important; }
+    thead th:nth-child(3) { background: linear-gradient(to right, #1976d2, #0288d1) !important; }
+    thead th:nth-child(4) { background: linear-gradient(to right, #0288d1, #26c6da) !important; }
+    thead th:nth-child(5) { background: linear-gradient(to right, #26c6da, #58d7de) !important; }
+
+    table, th, td { border: none !important; }
+    tbody tr:nth-child(odd) { background: #e0e0e0 !important; }
+    tbody tr:nth-child(even) { background: #d6d6d6 !important; }
+
+    /* still hide the print column and footer actions */
+    .print-col, .form-actions { display:none !important; }
+
+    .card { box-shadow:none; }
+  }
+</style>
+
+<div class="content-wrapper">
+  <div class="card">
+    <div class="card-header">
+      <h2>Trial Balance</h2>
+      <div class="btn-group-inline">
+        {% comment %} <a href="{% url 'trial_balance_pdf' %}" class="btn btn-download" target="_blank">📄 Download PDF</a> {% endcomment %}
+        <button type="button" class="btn btn-print-all" onclick="window.print()">🖨️ Print All</button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table id="trial-table">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th class="text-end">Debit</th>
+            <th class="text-end">Credit</th>
+            <th class="text-end">Balance</th>
+            <th class="print-col">Print</th>
+          </tr>
+        </thead>
+        <tbody>
+       {% for row in rows %}
+<tr id="row-{{ forloop.counter0 }}">
+  <td>{{ row.account }}</td>
+  <td class="text-end">{{ row.debit|floatformat:2 }}</td>
+  <td class="text-end">{{ row.credit|floatformat:2 }}</td>
+  <td class="text-end">{{ row.balance|floatformat:2 }}</td>
+  <td class="print-col">
+    <button type="button" class="btn btn-print-row" onclick="printSingle('row-{{ forloop.counter0 }}')">🖨️</button>
+  </td>
+</tr>
+{% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<div class="form-actions">
+  <a href="{% url 'account_list' %}" class="btn btn-secondary">← Back to Accounts</a>
+</div>
+
+<script>
+  function printSingle(rowId){
+    const row = document.getElementById(rowId);
+    if(!row) return;
+
+    const cells = Array.from(row.cells).slice(0,4).map(td => td.textContent.trim());
+
+    const w = window.open('', '_blank');
+    const html = `
+      <html>
+      <head>
+        <title>Trial Balance </title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+        <style>
+          body { font-family: 'Poppins','Segoe UI',Arial,sans-serif; margin: 24px; }
+          h3 { margin: 0 0 12px 0; font-weight: 600; }
+          table { width:100%; border-collapse:collapse; }
+          th, td { padding:.6rem .8rem; font-size:.95rem; }
+          thead th { color:#fff; text-align:center; }
+          th.text-end, td.text-end { text-align:right; }
+          th:first-child, td:first-child { text-align:left; }
+          thead th:nth-child(1){ background: linear-gradient(to right, #6a1b9a, #3949ab); }
+          thead th:nth-child(2){ background: linear-gradient(to right, #3949ab, #1976d2); }
+          thead th:nth-child(3){ background: linear-gradient(to right, #1976d2, #0288d1); }
+          thead th:nth-child(4){ background: linear-gradient(to right, #0288d1, #26c6da); }
+          @media print {
+            @page { margin: 0; }
+            body { margin: 24px; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        <h3>Trial Balance</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th class="text-end">Debit</th>
+              <th class="text-end">Credit</th>
+              <th class="text-end">Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${cells[0]}</td>
+              <td class="text-end">${cells[1]}</td>
+              <td class="text-end">${cells[2]}</td>
+              <td class="text-end">${cells[3]}</td>
+            </tr>
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    w.print();
+    w.close();
+  }
+</script>
+
+{% endblock %}

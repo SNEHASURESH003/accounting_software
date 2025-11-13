@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load static %}
+{% block 'content' %}
+<style>
+  body{ background: linear-gradient(to bottom,#e0e0e0,#d6d6d6); font-family:'Segoe UI',Arial,sans-serif; }
+
+  .forecast-wrap{
+    max-width: 1100px; margin: 34px auto;
+    background: linear-gradient(to bottom,#e0e0e0,#d6d6d6);
+    border: 1px solid #d0d8e0; border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,.06);
+    padding: 28px 36px;
+  }
+
+  .header-row{
+    display:flex; justify-content:space-between; align-items:center;
+    border-bottom:1px solid #cfd6de; padding-bottom:12px; margin-bottom:18px;
+  }
+  .brand-block{ display:flex; align-items:center; gap:10px; }
+  .brand-block img{ height:56px; }
+  .brand-name{ font-weight:800; color:#1f2d5a; }
+  .title{ font-size:28px; font-weight:800; color:#1976d2; margin:0; }
+
+  /* Action buttons (screen) */
+  .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; justify-content:center; }
+  .btn{
+    padding:9px 14px; border-radius:8px; border:1px solid #cfd6de;
+    background:#fff; cursor:pointer; text-decoration:none; color:#0f172a;
+  }
+  .btn-primary{ background:#1976d2; color:#fff; border-color:#1976d2; }
+  .btn-secondary{ background:#9333ea; color:#fff; border-color:#9333ea; }
+  .btn-outline{ background:#fff; color:#1976d2; border-color:#1976d2; }
+  .btn:hover{ filter:brightness(.97); }
+
+  /* Filters */
+  .filter-bar{
+    margin: -6px 0 16px 0;
+    background:#eef2f7; border:1px solid #d0d8e0; border-radius:10px;
+    padding:12px 14px;
+  }
+  .filter-form{ display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+  .filter-form label{ display:flex; flex-direction:column; gap:6px; font-size:12px; color:#374151; }
+  .filter-form select{
+    min-width:140px; padding:8px 10px; border:1px solid #cfd6de; border-radius:8px; background:#fff;
+  }
+  .filter-form .btn-apply{
+    padding:9px 14px; border-radius:8px; background:#1976d2; border:1px solid #1976d2; color:#fff; font-weight:600; cursor:pointer;
+  }
+  .filter-form .link-table{ margin-left:auto; text-decoration:none; font-weight:600; color:#1976d2; }
+
+  /* Table */
+  .table-responsive{ overflow-x:auto; }
+  .forecast-table{ width:100%; border-collapse:collapse; font-size:14px; margin-top:10px; }
+  .forecast-table thead tr{
+    background: linear-gradient(90deg,#6a1b9a 0%,#3949ab 25%,#1976d2 50%,#0288d1 75%,#26c6da 100%);
+    color:#fff;
+  }
+  .forecast-table th{ padding:12px; text-align:center; border:none; }
+  .forecast-table td{ padding:12px; border:none; background:#fff; text-align:right; }
+  .forecast-table td:first-child{ text-align:left; }
+  .forecast-table tbody tr:nth-child(odd) td{ background:#f6f7f9; } /* zebra */
+  .num{ white-space:nowrap; }
+  .pos{ color:#15803d; font-weight:700; }
+  .neg{ color:#dc2626; font-weight:700; }
+
+  .legend{
+    margin-top:14px; font-size:12px; color:#374151; background:#eef2f7;
+    border:1px solid #d0d8e0; border-radius:8px; padding:10px 12px;
+  }
+  .legend b{ color:#0f2a56; }
+
+  /* Print */
+  @media print{
+    @page{ margin: 14mm; }
+    header,.site-header,.navbar,.actions,.no-print,.filter-bar{ display:none !important; }
+
+    body{ background:#fff !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    .forecast-wrap{ background:#fff !important; border:none !important; box-shadow:none !important; padding:0; margin:0; max-width:100% !important; }
+
+    /* Full table printing (no scrollbars) */
+    .table-responsive{ overflow:visible !important; max-width:none !important; width:auto !important; }
+    .table-responsive::-webkit-scrollbar{ display:none !important; }
+
+    table.forecast-table{ width:100% !important; font-size:12px; border-collapse:collapse; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+    tr,td,th{ page-break-inside:avoid; }
+
+    /* Keep gradient header & zebra in print */
+    .forecast-table thead tr{
+      background: linear-gradient(90deg,#6a1b9a 0%,#3949ab 25%,#1976d2 50%,#0288d1 75%,#26c6da 100%) !important;
+      color:#fff !important;
+    }
+    .forecast-table tbody tr:nth-child(odd) td{ background:#f3f4f6 !important; }
+  }
+</style>
+
+<!-- Action buttons (screen only) -->
+<div class="actions no-print">
+  {% comment %} <a href="{% url 'forecast_rebuild_from_invoices' %}" class="btn btn-outline"
+     onclick="return confirm('Sync forecast from unpaid invoices?');">🔄 Sync with Invoices</a> {% endcomment %}
+  {% comment %} <a href="{% url 'forecast_add' %}" class="btn btn-secondary">➕ Add Forecast</a> {% endcomment %}
+  <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+</div>
+
+<div class="forecast-wrap">
+  <!-- Header -->
+  <div class="header-row">
+    <div class="brand-block">
+      {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo">
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div style="font-weight:800;">Inventura Tech</div>
+      {% endif %}
+    </div>
+    <h1 class="title">Forecast vs Actual — {{ year }}{% if project %} | {{ project.name }}{% endif %}</h1>
+  </div>
+
+  <!-- Filters (screen only; excluded from print) -->
+  <div class="filter-bar no-print">
+    <form method="get" class="filter-form">
+      <label>
+        Year
+        <select name="year">
+          {% if years %}
+            {% for y in years %}
+              <option value="{{ y }}" {% if y|stringformat:'s' == year|stringformat:'s' %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+          {% else %}
+            <option value="{{ year }}" selected>{{ year }}</option>
+          {% endif %}
+        </select>
+      </label>
+
+      <label>
+        Project
+        <select name="project">
+          <option value="">All</option>
+          {% for p in projects %}
+            <option value="{{ p.id }}" {% if selected_project_id == p.id|stringformat:'s' %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <button class="btn-apply" type="submit">Apply</button>
+      <a class="link-table" href="{% url 'forecast_table' %}">View Forecast Table →</a>
+    </form>
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="forecast-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Forecast Income</th>
+          <th>Forecast Expense</th>
+          <th>Actual Income</th>
+          <th>Actual Expense</th>
+          <th>Income Δ</th>
+          <th>Expense Δ</th>
+          <th>Net Forecast</th>
+          <th>Net Actual</th>
+          <th>Net Δ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.month_name }}</td>
+          <td class="num">{{ r.forecast_income }}</td>
+          <td class="num">{{ r.forecast_expense }}</td>
+          <td class="num">{{ r.actual_income }}</td>
+          <td class="num">{{ r.actual_expense }}</td>
+          <td class="num {% if r.income_var > 0 %}pos{% elif r.income_var < 0 %}neg{% endif %}">{{ r.income_var }}</td>
+          <td class="num {% if r.expense_var > 0 %}pos{% elif r.expense_var < 0 %}neg{% endif %}">{{ r.expense_var }}</td>
+          <td class="num">{{ r.net_forecast }}</td>
+          <td class="num">{{ r.net_actual }}</td>
+          <td class="num {% if r.net_var > 0 %}pos{% elif r.net_var < 0 %}neg{% endif %}">{{ r.net_var }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Totals</th>
+          <th class="num">{{ totals.forecast_income }}</th>
+          <th class="num">{{ totals.forecast_expense }}</th>
+          <th class="num">{{ totals.actual_income }}</th>
+          <th class="num">{{ totals.actual_expense }}</th>
+          <th class="num {% if totals.income_var > 0 %}pos{% elif totals.income_var < 0 %}neg{% endif %}">{{ totals.income_var }}</th>
+          <th class="num {% if totals.expense_var > 0 %}pos{% elif totals.expense_var < 0 %}neg{% endif %}">{{ totals.expense_var }}</th>
+          <th class="num">{{ totals.net_forecast }}</th>
+          <th class="num">{{ totals.net_actual }}</th>
+          <th class="num {% if totals.net_var > 0 %}pos{% elif totals.net_var < 0 %}neg{% endif %}">{{ totals.net_var }}</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="legend">
+    <b>Tip:</b> Filter by <b>Year</b> and <b>Project</b>, then use <b>Print</b> for a paper-ready report.  
+    <span class="pos">Green = better than forecast</span>, <span class="neg">Red = underperformance</span>.
+  </div>
+</div>
+{% endblock %}

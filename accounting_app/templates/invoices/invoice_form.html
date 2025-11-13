@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<div class="container-fluid px-0">
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark mb-0">✏️ Edit Invoice</h2>
+    <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary">← Back to List</a>
+  </div>
+
+  <!-- Form -->
+  <form method="post" class="needs-validation" novalidate>
+    {% csrf_token %}
+
+    <!-- Invoice Details -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-light">
+        <h5 class="mb-0">🧾 Invoice Details</h5>
+      </div>
+      <div class="card-body">
+        {{ form.non_field_errors }}
+        <div class="row">
+          {% for field in form.visible_fields %}
+            <div class="col-md-6 mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required{% endif %}">
+                {{ field.label }}{% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+
+              {% if field.name == "notes" or field.name == "description" %}
+                {{ field|add_class:"form-control"|attr:"rows:4"|attr:"style:resize:vertical;" }}
+              {% elif field.field.widget.input_type == "checkbox" %}
+                <div class="form-check mt-2">
+                  {{ field|add_class:"form-check-input" }}
+                  <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.help_text|default:field.label }}</label>
+                </div>
+              {% else %}
+                {{ field|add_class:"form-control" }}
+              {% endif %}
+
+              {% if field.help_text and field.field.widget.input_type != "checkbox" %}
+                <div class="form-text">{{ field.help_text }}</div>
+              {% endif %}
+
+              {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice Items -->
+    {% if formset %}
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-light">
+        <h5 class="mb-0">📦 Invoice Items</h5>
+      </div>
+      <div class="card-body">
+        {{ formset.management_form }}
+        {% for f in formset %}
+        <div class="border rounded p-3 mb-3 bg-white">
+          <div class="row">
+            {% for field in f.visible_fields %}
+              <div class="col-md-4 mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label {% if field.field.required %}required{% endif %}">
+                  {{ field.label }}{% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+
+                {% if field.name == "notes" or field.name == "description" %}
+                  {{ field|add_class:"form-control"|attr:"rows:3"|attr:"style:resize:vertical;" }}
+                {% elif field.field.widget.input_type == "checkbox" %}
+                  <div class="form-check mt-2">
+                    {{ field|add_class:"form-check-input" }}
+                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.help_text|default:field.label }}</label>
+                  </div>
+                {% else %}
+                  {{ field|add_class:"form-control" }}
+                {% endif %}
+
+                {% if field.errors %}
+                  <div class="text-danger small">{{ field.errors.0 }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Buttons -->
+    <div class="d-flex justify-content-between">
+      <button type="submit" class="btn btn-primary shadow-sm">💾 Save Invoice</button>
+      <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

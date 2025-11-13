@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<style>
+  /* reserve space so the printed footer won't overlap content */
+  :root { --footer-height: 160px; } /* auto-updated by script below */
+
+  .kpi-sheet { padding-bottom: var(--footer-height); }
+
+  .kpi-actions { display:flex; justify-content:flex-end; gap:.5rem; margin: 12px 0; }
+  .btn-print { border:none; border-radius:8px; padding:.5rem .9rem; background:#1976d2; color:#fff; font-weight:600; }
+  .btn-print:hover { filter: brightness(.92); }
+
+  /* Print styles */
+  @media print {
+    @page { margin: 12mm; }
+    body { background:#fff !important; }
+
+    /* Hide site chrome & action buttons */
+    header, .site-header, .navbar, .sidebar, .topbar, .app-header, .no-print { display:none !important; }
+
+    /* Show base footer and pin it to bottom */
+    footer, .site-footer {
+      position: fixed !important;
+      bottom: 0; left: 0; right: 0;
+      display: block !important; visibility: visible !important;
+      z-index: 9999;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .kpi-sheet { padding-bottom: var(--footer-height) !important; }
+
+    /* If your footer has social buttons with white circles, remove circles in print */
+    footer .social a, footer .social .btn, footer .social .circle,
+    .site-footer .social a, .site-footer .social .btn, .site-footer .social .circle {
+      background: transparent !important; box-shadow:none !important; border:0 !important;
+    }
+    footer .social i, footer .social svg,
+    .site-footer .social i, .site-footer .social svg {
+      color:#0d6efd !important; fill: currentColor !important;
+    }
+  }
+</style>
+
+<div class="kpi-sheet">
+  <!-- Actions (hidden in print) -->
+  <div class="kpi-actions no-print">
+    <button type="button" class="btn-print" onclick="window.print()">🖨️ Print</button>
+  </div>
+
+  <div class="container my-4" style="max-width: 600px;">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="fs-2 fw-semibold mb-4 text-center">📊 KPI Dashboard</h2>
+
+        <table class="table table-sm table-hover mb-0">
+          <tbody>
+            <tr>
+              <th class="text-muted">Total Invoices</th>
+              <td>{{ total_invoices }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Paid Invoices</th>
+              <td>{{ paid_invoices }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Total Revenue</th>
+              <td>₹{{ total_revenue }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Total Expense</th>
+              <td>₹{{ total_expense }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Avg Expense</th>
+              <td>₹{{ avg_expense }}</td>
+            </tr>
+            <tr>
+              <th class="text-muted">Maintenance Due This Month</th>
+              <td>{{ maintenance_due }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Match reserved space to actual footer height (works for screen & print)
+  (function () {
+    function setFooterHeightVar() {
+      var f = document.querySelector('footer.site-footer, footer, .site-footer');
+      if (f) {
+        var h = f.offsetHeight || 160;
+        document.documentElement.style.setProperty('--footer-height', h + 'px');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', setFooterHeightVar);
+    window.addEventListener('resize', setFooterHeightVar);
+    if (window.matchMedia) {
+      var mql = window.matchMedia('print');
+      if (mql.addEventListener) mql.addEventListener('change', setFooterHeightVar);
+      else mql.addListener(setFooterHeightVar);
+    }
+    window.onbeforeprint = setFooterHeightVar;
+  })();
+</script>
+
+{% endblock %}

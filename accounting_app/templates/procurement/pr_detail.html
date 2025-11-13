@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}PR {{ object.number }}{% endblock %}
+
+{% block 'content' %}
+<style>
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #111827;
+  }
+  .card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  .card-header {
+    background: #f9fafb;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .table th {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4b5563;
+    background: #f3f4f6;
+  }
+  .table td {
+    font-size: 15px;
+    color: #374151;
+  }
+  .table thead th {
+    border-bottom: none;
+  }
+  .info-table th {
+    width: 180px;
+    font-weight: 600;
+    color: #6b7280;
+  }
+  .status-badge {
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 9999px;
+    background: #e0e7ff;
+    color: #4338ca;
+    display: inline-block;
+  }
+  .btn {
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+  }
+  .btn-gradient {
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #fff;
+    border: none;
+  }
+  .btn-gradient:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title">📑 Purchase Request #{{ object.number }}</h1>
+  <div>
+    {% if object.status == "APPROVED" %}
+      <span class="status-badge bg-success text-white">Approved</span>
+    {% elif object.status == "SUBMITTED" %}
+      <span class="status-badge bg-warning text-dark">Submitted</span>
+    {% elif object.status == "REJECTED" %}
+      <span class="status-badge bg-danger text-white">Rejected</span>
+    {% elif object.status == "CLOSED" %}
+      <span class="status-badge bg-secondary text-white">Closed</span>
+    {% else %}
+      <span class="status-badge bg-info text-dark">Draft</span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">📌 Request Details</div>
+  <div class="table-responsive">
+    <table class="table mb-0 info-table">
+      <tbody>
+        <tr>
+          <th>Requester</th>
+          <td>{{ object.requester }}</td>
+        </tr>
+        <tr>
+          <th>Project</th>
+          <td>{{ object.project|default:"—" }}</td>
+        </tr>
+        <tr>
+          <th>Cost Center</th>
+          <td>{{ object.cost_center|default:"—" }}</td>
+        </tr>
+        <tr>
+          <th>Notes</th>
+          <td style="white-space: pre-wrap">{{ object.notes|default:"—" }}</td>
+        </tr>
+        <tr>
+          <th>Total</th>
+          <td><strong>{{ object.total_amount|floatformat:2 }}</strong></td>
+        </tr>
+        <tr>
+          <th>Created</th>
+          <td>{{ object.created_on }}</td>
+        </tr>
+        <tr>
+          <th>Updated</th>
+          <td>{{ object.updated_on }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>📦 Line Items</span>
+    <span class="fw-bold text-primary">Total: {{ object.total_amount|floatformat:2 }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Description</th>
+          <th class="text-end">Qty</th>
+          <th class="text-end">Unit Price</th>
+          <th class="text-end">Line Total</th>
+          <th>Account</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for li in object.lines.all %}
+        <tr>
+          <td>{{ li.product|default:"—" }}</td>
+          <td>{{ li.description|default:"—" }}</td>
+          <td class="text-end">{{ li.qty }}</td>
+          <td class="text-end">{{ li.unit_price|floatformat:2 }}</td>
+          <td class="text-end fw-semibold">{{ li.line_total|floatformat:2 }}</td>
+          <td>{{ li.account|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">No line items.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% if object.lines.exists %}
+      <tfoot class="bg-light">
+        <tr>
+          <th colspan="4" class="text-end">Grand Total</th>
+          <th class="text-end fw-bold text-primary">{{ object.total_amount|floatformat:2 }}</th>
+          <th></th>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
+<div class="d-flex gap-3">
+  <a href="{% url 'pr_list' %}" class="btn btn-outline-secondary">⬅ Back to list</a>
+
+  {% if object.status != "APPROVED" %}
+    <form method="post" action="{% url 'pr_submit' pk=object.pk %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-gradient">📤 Submit for Approval</button>
+    </form>
+  {% endif %}
+
+  <div class="ms-auto d-flex align-items-center">
+    <span class="me-2 fw-semibold">Approval status:</span>
+    {% if object.is_approved %}
+      <span class="status-badge bg-success text-white">Approved</span>
+    {% else %}
+      <span class="status-badge bg-secondary text-white">Not Approved</span>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+
+
+    

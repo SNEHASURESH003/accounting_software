@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block 'content' %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4">
+
+          <h2 class="text-center text-primary fw-bold mb-3">
+            🚀 Subscribe to <span class="text-dark">{{ plan.name }}</span>
+          </h2>
+
+          <div class="mb-3 text-center">
+            <p class="fs-5">
+              <strong>Price:</strong> ₹{{ plan.price }} / {{ plan.interval }}
+            </p>
+
+           {% if subscription.trial_end_date and today <= subscription.trial_end_date %}
+  <p class="text-info">
+    🧪 Trial active until <strong>{{ subscription.trial_end_date }}</strong>
+  </p>
+{% endif %}
+
+
+          </div>
+
+          {% if already_subscribed %}
+            <div class="alert alert-success text-center">
+              ✅ You are already subscribed to this plan.
+            </div>
+            <div class="d-grid">
+              <button class="btn btn-outline-success" disabled>Subscribed</button>
+            </div>
+          {% else %}
+            <form method="post" class="text-center">
+              {% csrf_token %}
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">
+                  Subscribe Now
+                </button>
+              </div>
+            </form>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<style>
+  .form-container {
+    max-width: 768px;
+    margin: 60px auto;
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ede9fe;
+  }
+
+  .form-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  @media (min-width: 640px) {
+    .form-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155;
+  }
+
+  .required-star {
+    color: #dc2626; /* red */
+    margin-left: 4px;
+  }
+
+  /* Consistent form control look */
+  .form-control {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: #9333ea;
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+  }
+
+  textarea.form-control {
+    resize: vertical;
+  }
+
+  .form-button {
+    width: 100%;
+    background: #9333ea;
+    color: white;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+  }
+
+  .form-button:hover {
+    background: #7e22ce;
+  }
+</style>
+
+<div class="form-container">
+  <h2 class="form-title">➕ Add Rolling Forecast</h2>
+
+  <form method="POST" class="space-y-6">
+    {% csrf_token %}
+    
+    <div class="form-grid">
+      <div>
+        <label>
+          {{ form.project.label }}
+          {% if form.project.field.required %}<span class="required-star">*</span>{% endif %}
+        </label>
+        {% render_field form.project class="form-control" %}
+      </div>
+      <div>
+        <label>
+          {{ form.account.label }}
+          {% if form.account.field.required %}<span class="required-star">*</span>{% endif %}
+        </label>
+        {% render_field form.account class="form-control" %}
+      </div>
+      <div>
+        <label>
+          {{ form.cost_center.label }}
+          {% if form.cost_center.field.required %}<span class="required-star">*</span>{% endif %}
+        </label>
+        {% render_field form.cost_center class="form-control" %}
+      </div>
+      <div>
+        <label>
+          {{ form.year.label }}
+          {% if form.year.field.required %}<span class="required-star">*</span>{% endif %}
+        </label>
+        {% render_field form.year class="form-control" %}
+      </div>
+      <div>
+        <label>
+          {{ form.month.label }}
+          {% if form.month.field.required %}<span class="required-star">*</span>{% endif %}
+        </label>
+        {% render_field form.month class="form-control" %}
+      </div>
+      <div>
+        <label>
+          {{ form.forecast_amount.label }}
+          {% if form.forecast_amount.field.required %}<span class="required-star">*</span>{% endif %}
+        </label>
+        {% render_field form.forecast_amount class="form-control" %}
+      </div>
+    </div>
+
+    <div>
+      <label>
+        {{ form.notes.label }}
+        {% if form.notes.field.required %}<span class="required-star">*</span>{% endif %}
+      </label>
+      {% render_field form.notes class="form-control" %}
+    </div>
+
+    <button type="submit" class="form-button">💾 Save Forecast</button>
+  </form>
+</div>
+{% endblock %}
+

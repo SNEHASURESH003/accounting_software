@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block 'content' %}
+<h1>
+    {% if contract %}
+        Deals for Contract #{{ contract.id }}
+    {% else %}
+        All Deals
+    {% endif %}
+</h1>
+
+<a href="{% url 'deal_create' %}{% if contract %}?contract_id={{ contract.id }}{% endif %}" class="btn btn-primary">
+    + Create Deal
+</a>
+
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Contract</th>
+            <th>Owner</th>
+            <th>Created By</th>
+            <th>Created At</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for deal in deals %}
+            <tr>
+                <td>{{ deal.id }}</td>
+                <td>{{ deal.title }}</td>
+                <td>
+                    {% if deal.contract %}
+                        <a href="{% url 'contract_detail' contract_id=deal.contract.id %}">#{{ deal.contract.id }}</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ deal.owner }}</td>
+                <td>{{ deal.created_by }}</td>
+                <td>{{ deal.created_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    {% comment %} <a href="{% url 'deal_edit' deal.id %}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="{% url 'deal_delete' deal.id %}" class="btn btn-sm btn-danger">Delete</a> {% endcomment %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">No deals found.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

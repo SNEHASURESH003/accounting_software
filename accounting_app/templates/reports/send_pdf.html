@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+  <div class="card shadow-sm" style="width: 600px;">
+    <div class="card-body">
+      <h2 class="fs-2 fw-semibold mb-4 text-center">📤 Monthly Summary Report (PDF)</h2>
+
+      <form method="POST" novalidate>
+        {% csrf_token %}
+        
+        <div class="mb-3">
+          <label for="from_email" class="form-label">From Email</label>
+          <input type="email" name="from_email" id="from_email" class="form-control form-control-sm" placeholder="you@example.com" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="to_email" class="form-label">To Email</label>
+          <input type="email" name="to_email" id="to_email" class="form-control form-control-sm" placeholder="recipient@example.com" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-sm w-100">📨 Send PDF</button>
+      </form>
+
+      {% if success %}
+        <div class="alert alert-success mt-3 mb-0 py-2 px-3">{{ success }}</div>
+      {% endif %}
+      {% if error %}
+        <div class="alert alert-danger mt-3 mb-0 py-2 px-3">{{ error }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

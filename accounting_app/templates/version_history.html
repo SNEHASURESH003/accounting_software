@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load tz %}
+
+
+{% block title %}📜 Version History Log{% endblock %}
+
+{% block 'content' %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-dark">🕘 Full Version History Log</h2>
+
+  {% if history %}
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Model</th>
+            <th scope="col">Object ID</th>
+            <th scope="col">Timestamp</th>
+            <th scope="col">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in history %}
+            <tr>
+              <td><strong>{{ forloop.counter }}</strong></td>
+              <td class="text-capitalize">{{ item.content_type.model }}</td>
+              <td>#{{ item.object_id }}</td>
+          <td>
+  {{ item.created_at|localtime|date:"Y-m-d H:i:s" }}
+  <div class="muted">({{ item.created_at|timesince }} ago)</div>
+</td>
+
+              <td>
+                <pre style="white-space: pre-wrap; word-break: break-word; background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #dee2e6;">
+{{ item.data|safe }}
+                </pre>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No version history records found.</div>
+  {% endif %}
+</div>
+{% endblock %}

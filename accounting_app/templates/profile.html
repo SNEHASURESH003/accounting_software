@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-body text-center p-4">
+
+                    <!-- Profile Picture -->
+                    {% if profile.profile_photo %}
+                        <img src="{{ profile.profile_photo.url }}" 
+                             class="rounded-circle mb-3"
+                             alt="Profile Photo" 
+                             style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                        <img src="https://via.placeholder.com/120" 
+                             class="rounded-circle mb-3"
+                             alt="Profile Photo">
+                    {% endif %}
+
+                    <!-- Name -->
+                    <h4 class="fw-bold">{{ profile.user.first_name}} {{ profile.user.last_name}}</h4>
+
+                    <!-- Contact Info -->
+                    <p class="text-muted mb-1">
+                        <i class="bi bi-telephone me-1"></i>
+                        {{ profile.phone|default:"No phone provided" }}
+                    </p>
+                    <p class="text-muted">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        {{ profile.address|default:"No address provided" }}
+                    </p>
+
+                    <hr>
+
+                    <!-- Action Button -->
+                    <a href="{% url 'profile_edit' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

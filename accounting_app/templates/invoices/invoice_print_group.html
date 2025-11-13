@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block 'content' %}
+<style>
+  /* ---------- Screen (base look) ---------- */
+  body{
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  .invoice-wrapper{
+    max-width: 850px;
+    margin: 30px auto;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    padding: 40px 50px;
+    border: 1px solid #d0d8e0;
+    box-shadow: 0 4px 15px rgba(0,0,0,.05);
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .invoice-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 15px;
+  }
+
+  .company-logo{ display:flex; align-items:center; gap:10px; }
+  .company-logo img.logo-img{ max-height:80px; height:auto; width:auto; margin-right:10px; }
+  .company-logo .logo-text, .company-logo .sb-company{ font-size:24px; font-weight:700; color:#1976d2; }
+
+  .invoice-details p, .billing-info p{ margin:3px 0; font-size:14px; color:#333; }
+
+  .invoice-title{
+    font-size:32px;
+    font-weight:700;
+    color:#1976d2;
+    margin:0;
+    text-transform:uppercase;
+    text-align:right;
+  }
+
+  /* ---------- Items Table ---------- */
+  .invoice-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    font-size:14px;
+  }
+
+  /* Single continuous gradient header bar */
+  .invoice-table thead tr{
+    background: linear-gradient(90deg,
+      #6a1b9a 0%,
+      #3949ab 28%,
+      #1976d2 55%,
+      #0288d1 78%,
+      #26c6da 100%
+    );
+  }
+  .invoice-table thead th{
+    background: transparent;           /* important for the continuous bar */
+    color: #fff;
+    padding: 12px;
+    text-align: center;
+    border: none;
+  }
+  .invoice-table thead th:first-child{ border-top-left-radius: 6px; }
+  .invoice-table thead th:last-child { border-top-right-radius: 6px; }
+
+  .invoice-table td{
+    padding:12px;
+    text-align:center;
+    border:none;
+  }
+  .invoice-table td:first-child{ text-align:left; }
+
+  .invoice-table tbody tr:nth-child(odd){ background:#e0e0e0; }
+  .invoice-table tbody tr:nth-child(even){ background:#d6d6d6; }
+
+  /* ---------- Totals ---------- */
+  .invoice-totals{
+    text-align:right;
+    margin-top:15px;
+    font-size:14px;
+    background:#e0e0e0;
+    padding:15px;
+    border-radius:5px;
+  }
+  .invoice-totals .total{
+    font-weight:700;
+    font-size:18px;
+    color:#d62828;
+  }
+
+  /* ---------- Payment Box ---------- */
+  .payment-info{
+    margin-top:30px;
+    padding:20px;
+    border:2px solid #1976d2;
+    border-radius:10px;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+  }
+  .payment-info h3{
+    text-align:center;
+    font-size:16px;
+    font-weight:700;
+    margin:0 0 15px;
+    color:#1976d2;
+    text-transform:uppercase;
+  }
+  .payment-row{
+    display:flex;
+    justify-content:space-between;
+    margin:6px 0;
+    font-size:14px;
+    color:#333;
+  }
+  .payment-row strong{ color:#1976d2; }
+
+  /* ---------- Screen-only Print Button ---------- */
+  .no-print{ text-align:center; margin:20px auto; }
+  .no-print button{
+    padding:10px 20px;
+    background:#1976d2;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+  }
+
+  /* ---------- Print rules ---------- */
+  @media print{
+    @page{ margin:0; }
+    body{
+      margin:0;
+      background:#fff !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+
+    header, .site-header, .navbar, .no-print, button{ display:none !important; }
+
+    /* Keep the one-piece gradient header in print */
+    .invoice-table thead tr{
+      background: linear-gradient(90deg,
+        #6a1b9a 0%,
+        #3949ab 28%,
+        #1976d2 55%,
+        #0288d1 78%,
+        #26c6da 100%
+      ) !important;
+    }
+    .invoice-table thead th{
+      background: transparent !important;
+      color: #fff !important;
+    }
+
+    /* Remove borders; keep zebra stripes */
+    .invoice-table, .invoice-table th, .invoice-table td{ border:none !important; }
+    .invoice-table tbody tr:nth-child(odd){ background:#e0e0e0 !important; }
+    .invoice-table tbody tr:nth-child(even){ background:#d6d6d6 !important; }
+
+    .invoice-wrapper{
+      margin:0 auto;
+      background:#fff !important;
+      box-shadow:none !important;
+      border:none !important;
+      page-break-inside:avoid;
+      padding-bottom:120px !important;
+    }
+  }
+</style>
+
+<div class="no-print">
+    <a href="{% url 'invoice_list' %}" 
+     style="padding:10px 20px; 
+            background:#6c757d; 
+            color:#fff; 
+            border:none; 
+            border-radius:6px; 
+            text-decoration:none; 
+            font-size:14px; 
+            margin-right:10px;">
+    ← Back
+  </a>
+  <button onclick="window.print()">Print Consolidated</button>
+</div>
+
+<div class="invoice-wrapper">
+  <!-- Header -->
+  <div class="invoice-header">
+    <div class="company-logo">
+      {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo" height="80" />
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div><div class="sb-company">Inventura Tech</div></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Meta -->
+  <div style="display:flex; justify-content:space-between;">
+    <div class="meta">
+      <p><strong>Client:</strong> {{ client.name }}</p>
+      <p><strong>Project:</strong> {% if project %}{{ project.name }}{% else %}—{% endif %}</p>
+      <p><strong>Invoices in group:</strong> {{ invoices|length }}</p>
+    </div>
+    <div>
+      <h1 class="invoice-title">Invoice</h1>
+      <p style="text-align:right;"><strong>Status:</strong> {% if all_paid %}Paid{% else %}Mixed{% endif %}</p>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <table class="invoice-table">
+    <thead>
+      <tr>
+        <th>Invoice</th>
+        <th>Date</th>
+        <th>Subtotal</th>
+        <th>GST</th>
+        <th>Total</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inv in invoices %}
+      <tr>
+        <td>#{{ inv.id }}</td>
+        <td>{{ inv.date }}</td>
+        {# Django auto-calls no-arg methods #}
+        <td>₹{{ inv.total_without_tax|floatformat:2 }}</td>
+        <td>₹{{ inv.gst_amount|floatformat:2 }}</td>
+        <td>₹{{ inv.total_with_tax|floatformat:2 }}</td>
+        <td>{{ inv.status|default:"—"|title }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Totals box -->
+  <div class="invoice-totals">
+    <p><strong>Subtotal (all):</strong> ₹{{ subtotal_sum|default_if_none:"0"|floatformat:2 }}</p>
+    <p><strong>GST (all):</strong> ₹{{ gst_sum|default_if_none:"0"|floatformat:2 }}</p>
+    <p class="total">TOTAL (all): ₹{{ grand_sum|default_if_none:"0"|floatformat:2 }}/-</p>
+  </div>
+
+  <!-- Payment Info -->
+  <div class="payment-info">
+    <h3>Payment Info</h3>
+    <div class="payment-row"><strong>Bank Name:</strong><span>{{ branding.bank_name|default:"Federal Bank" }}</span></div>
+    <div class="payment-row"><strong>Account Number:</strong><span>{{ branding.bank_account|default:"40344100900107" }}</span></div>
+    <div class="payment-row"><strong>A/C Name:</strong><span>{{ branding.account_name|default:"Alex R" }}</span></div>
+    <div class="payment-row"><strong>IFSC:</strong><span>{{ branding.ifsc|default:"KLGB0040344" }}</span></div>
+    <div class="payment-row"><strong>UPI ID:</strong><span>{{ branding.upi_id|default:"auxen008@okicici" }}</span></div>
+  </div>
+</div>
+
+
+{% endblock %}

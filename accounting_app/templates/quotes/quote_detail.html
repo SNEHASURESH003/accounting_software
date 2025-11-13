@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block 'content' %}
+<style>
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #111827;
+  }
+  .card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    margin-bottom: 1.5rem;
+  }
+  .card-header {
+    background: #f9fafb;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .info-table th {
+    width: 160px;
+    font-weight: 600;
+    color: #6b7280;
+    padding-right: 1rem;
+  }
+  .info-table td {
+    color: #374151;
+    font-size: 15px;
+  }
+  .btn {
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+  }
+  .btn-gradient {
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: #fff;
+    border: none;
+  }
+  .btn-gradient:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="page-title">📝 Quote #{{ quote.id }}: {{ quote.title }}</h1>
+  <div class="d-flex gap-2">
+    <a href="{% url 'quote_list' %}" class="btn btn-outline-secondary">⬅ Back to Quotes</a>
+    <a href="{% url 'revenue_dashboard' %}" class="btn btn-outline-secondary">📊 Revenues</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">📌 Quote Details</div>
+  <div class="table-responsive">
+    <table class="table mb-0 info-table">
+      <tbody>
+        <tr>
+          <th>Deal</th>
+          <td>{{ quote.deal.title }}</td>
+        </tr>
+        <tr>
+          <th>Client</th>
+          <td>{{ quote.deal.client }}</td>
+        </tr>
+        <tr>
+          <th>Amount</th>
+          <td><strong>₹{{ quote.amount|floatformat:2 }}</strong></td>
+        </tr>
+        <tr>
+          <th>Status</th>
+          <td>
+            {% if quote.status == "Approved" %}
+              <span class="badge bg-success rounded-pill px-3 py-2">{{ quote.status }}</span>
+            {% elif quote.status == "Pending" %}
+              <span class="badge bg-warning text-dark rounded-pill px-3 py-2">{{ quote.status }}</span>
+            {% elif quote.status == "Rejected" %}
+              <span class="badge bg-danger rounded-pill px-3 py-2">{{ quote.status }}</span>
+            {% else %}
+              <span class="badge bg-secondary rounded-pill px-3 py-2">{{ quote.status }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% if quote.notes %}
+        <tr>
+          <th>Notes</th>
+          <td>{{ quote.notes }}</td>
+        </tr>
+        {% endif %}
+        {% if quote.pdf_file %}
+        <tr>
+          <th>PDF</th>
+          <td>
+            <a href="{{ quote.pdf_file.url }}" class="btn btn-outline-dark btn-sm" target="_blank">
+              📄 Download PDF
+            </a>
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if quote.status|lower == "draft" %}
+<div class="d-flex gap-2 mb-4">
+  <a href="{% url 'quote_approve' quote.id %}" class="btn btn-success">✅ Approve</a>
+  <a href="{% url 'quote_reject' quote.id %}" class="btn btn-danger">❌ Reject</a>
+</div>
+{% endif %}
+
+
+{% if request.user.role == "accountant" %}
+<div class="card">
+  <div class="card-header">💳 Payment</div>
+  <div class="card-body">
+    {% if not quote.paid %}
+      {% if quote.razorpay_order_id %}
+        <form action="{% url 'razorpay_quote_payment_callback' %}" method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="quote_id" value="{{ quote.id }}">
+          <script
+            src="https://checkout.razorpay.com/v1/checkout.js"
+            data-key="{{ razorpay_key_id }}"
+            data-amount="{{ quote.amount|floatformat:0 }}00"
+            data-currency="INR"
+            data-order_id="{{ quote.razorpay_order_id }}"
+            data-buttontext="💳 Pay ₹{{ quote.amount|floatformat:2 }}"
+            data-name="Your Company"
+            data-description="Quote Payment"
+            data-theme.color="#4f46e5">
+          </script>
+        </form>
+      {% else %}
+        <p class="text-warning">⚠️ Razorpay order not generated. Please edit the quote or contact admin.</p>
+      {% endif %}
+    {% else %}
+      <p class="text-success fw-semibold">✅ Paid</p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+

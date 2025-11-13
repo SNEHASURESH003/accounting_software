@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark mb-0">👤 Add New Employee</h2>
+    <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary">
+      ← Back to Employee List
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">📝 Employee Information</h5>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="form-section">
+          {{ form.as_p }}
+        </div>
+
+        <div class="mt-4 d-flex justify-content-between">
+          <button type="submit" class="btn btn-primary">
+            💾 Save Employee
+          </button>
+          <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<!-- Google Fonts: Poppins -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .card {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .btn {
+    border-radius: 8px;
+  }
+
+  .info-table th {
+    width: 30%;
+    font-weight: 600;
+  }
+
+  .info-table td {
+    vertical-align: middle;
+  }
+</style>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card border-light">
+        <div class="card-header bg-light d-flex align-items-center">
+          <h4 class="mb-0">Journal Entry #{{ object.pk }}</h4>
+        </div>
+
+        <div class="card-body">
+{% comment %} 
+          {% if messages %}
+            <div class="alert alert-info">
+              <ul class="mb-0">
+                {% for m in messages %}
+                  <li>{{ m }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %} {% endcomment %}
+
+          <table class="table table-bordered info-table">
+            <tbody>
+              <tr>
+                <th>Title</th>
+                <td>{{ object.description }}</td>
+              </tr>
+              <tr>
+                <th>Date</th>
+                <td>{{ object.date }}</td>
+              </tr>
+              <tr>
+                <th>Status</th>
+                <td>
+                  {% if object.is_posted %}
+                    <span class="badge bg-success">POSTED</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Draft</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Period</th>
+                <td>
+                  {{ object.date|date:"Y-m" }}
+                  {% if locked %}
+                    <strong class="text-danger ms-2">• LOCKED</strong>
+                  {% else %}
+                    <span class="text-muted ms-2">• Open</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Approval</th>
+                <td>
+                  {% if is_approved %}
+                    <span class="text-success">✅ Approved</span>
+                  {% else %}
+                    <span class="text-warning">⏳ Pending</span>
+                  {% endif %}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <hr>
+
+          <div class="d-flex flex-wrap gap-3 mt-3">
+            <a href="{% url 'journal_entry_list' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left-circle"></i> Back to list
+            </a>
+            <a href="{% url 'update_journal_entry' pk=object.pk %}" class="btn btn-outline-primary">
+              <i class="bi bi-pencil-square"></i> Edit
+            </a>
+            <a href="{% url 'je_request_approval' pk=object.pk %}" class="btn btn-outline-warning">
+              <i class="bi bi-envelope-check"></i> Request Approval
+            </a>
+  <a href="{% url 'journalentry_approvals' pk=object.pk %}" class="btn btn-outline-info">
+    <i class="bi bi-eye"></i> View Approvals
+</a>
+
+            <form method="get" action="{% url 'je_post' pk=object.pk %}">
+              <button type="submit"
+                      class="btn btn-success"
+                      {% if locked or not is_approved or object.is_posted %}disabled{% endif %}
+                      title="{% if locked %}Locked period{% elif not is_approved %}Approval required{% elif object.is_posted %}Already posted{% endif %}">
+                <i class="bi bi-upload"></i> Post(Only after approved)
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+

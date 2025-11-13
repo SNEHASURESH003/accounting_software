@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+{# Optional: enable thousands separator with {{ value|intcomma }} #}
+{# {% load humanize %} #}
+
+<style>
+  .dr-container{
+    max-width: 900px;
+    margin: 60px auto;
+    background:#fff;
+    padding: 30px 40px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+    border:1px solid #e5e7eb;
+  }
+
+  .dr-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:25px;
+  }
+  .dr-header h2{
+    font-size:24px; font-weight:600; color:#333; margin:0;
+  }
+
+  .add-btn{
+    background:#467fd0; color:#fff !important;
+    padding:8px 14px; border-radius:6px; text-decoration:none;
+    font-size:14px; transition:background .3s ease; white-space:nowrap;
+  }
+  .add-btn:hover{ background:#3a6fb3; }
+
+  .dr-table{ width:100%; border-collapse:collapse; margin-top:15px; }
+  .dr-table th, .dr-table td{
+    border:1px solid #e5e7eb; padding:12px 14px; text-align:left; color:#333;
+  }
+  .dr-table th{ background:#f9fafb; color:#555; font-weight:600; }
+  .dr-table tr:nth-child(even){ background:#f9f9f9; }
+
+  @media (max-width:640px){
+    .dr-container{ margin:24px 12px; padding:20px; }
+    .dr-header{ flex-direction:column; align-items:stretch; }
+    .add-btn{ width:100%; text-align:center; }
+  }
+</style>
+
+<div class="dr-container">
+  <div class="dr-header">
+    <h2>📅 Deferred Revenues</h2>
+    {% if request.user.role == "Accountant" or request.user.is_superuser %}
+      <a href="{% url 'add_deferred_revenue' %}" class="add-btn">➕ Add Revenue</a>
+    {% endif %}
+  </div>
+
+  {% if records %}
+    <table class="dr-table">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Amount</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dr in records %}
+        <tr>
+          <td>{{ dr.customer }}</td>
+          <td>₹{{ dr.amount|floatformat:2 }}</td>
+          <td>{{ dr.start_date|date:"M d, Y" }}</td>
+          <td>{{ dr.end_date|date:"M d, Y" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No deferred revenues available.</p>
+  {% endif %}
+</div>
+{% endblock %}
+

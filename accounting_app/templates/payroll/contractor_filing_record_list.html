@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+<div class="container mt-4">
+  <div class="card p-4 shadow-sm">
+    <h3 class="mb-4 text-center">TDS Filing Records for {{ contractor_payment.name }}</h3>
+     <div class="form-actions">
+     
+      <a href="{% url 'contractor_payment_list' %}" class="btn btn-secondary">← Back to Contractor Payments</a>
+    </div><br>
+
+    {% if request.user.role == "Accountant" %}
+      <div class="text-end mb-3">
+        <a href="{% url 'update_contractor_filing' pk=contractor_payment.id %}" class="btn btn-primary">
+          ➕ Add or Edit Filing Record
+        </a>
+      </div>
+    {% endif %}
+
+    {% if filings %}
+      <table class="table table-bordered table-sm">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">Filed On</th>
+            <th scope="col">Amount Filed</th>
+            <th scope="col">Paid To</th>
+            <th scope="col">Payment Mode</th>
+            <th scope="col">Reference</th>
+            <th scope="col">Challan</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for filing in filings %}
+          <tr>
+            <td>{{ filing.filed_on|date:"d M Y" }}</td>
+            <td>₹{{ filing.amount_filed }}</td>
+            <td>{{ filing.paid_to }}</td>
+            <td>{{ filing.payment_mode }}</td>
+            <td>{{ filing.payment_reference|default:"—" }}</td>
+            <td>
+              {% if filing.challan_file %}
+                <a href="{{ filing.challan_file.url }}" target="_blank" class="text-success">📎 View</a>
+              {% else %}
+                <span class="text-muted">Not Uploaded</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-muted text-center mb-0">No TDS filings recorded yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

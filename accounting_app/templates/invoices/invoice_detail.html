@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+<h2>Invoice #{{ invoice.id }}</h2>
+<p><strong>Client:</strong> {{ invoice.client.name }}</p>
+<p><strong>Date:</strong> {{ invoice.date }}</p>
+<p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
+<hr>
+<h4>Items</h4>
+<table class="table">
+  <thead>
+    <tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr>
+  </thead>
+  <tbody>
+
+  <!-- Product/service items -->
+  {% for item in invoice.items.all %}
+  <tr>
+    <td>{{ item.description }}</td>
+    <td>{{ item.quantity }}</td>
+    <td>{{ item.unit_price }}</td>
+    <td>{{ item.total }}</td>
+  </tr>
+  {% endfor %}
+
+  <!-- Time entries -->
+  {% for entry in invoice.time_entries.all %}
+  <tr>
+    <td>{{ entry.description }} <small>(Time Entry)</small></td>
+    <td>{{ entry.hours }} hrs</td>
+    <td>{{ entry.rate_per_hour }}</td>
+    <td>{{ entry.total }}</td>
+  </tr>
+  {% endfor %}
+
+  </tbody>
+</table>
+
+<hr>
+<p><strong>Subtotal:</strong> ₹{{ invoice.total_without_tax }}</p>
+<p><strong>GST ({{ invoice.gst_percent }}%):</strong> ₹{{ invoice.gst_amount }}</p>
+<p><strong>Total:</strong> ₹{{ invoice.total_with_tax }}</p>
+
+{% if invoice.is_recurring %}
+  <p><strong>Recurring Invoice:</strong> {{ invoice.get_recurring_interval_display }}</p>
+  {% if invoice.last_generated %}
+    <p><strong>Last Generated:</strong> {{ invoice.last_generated }}</p>
+  {% endif %}
+{% else %}
+  <p>This is a one-time invoice.</p>
+{% endif %}
+{% if invoice.notes %}
+  <hr>
+  <p><strong>Notes:</strong> {{ invoice.notes }}</p>
+{% endif %}
+
+{% endblock %}

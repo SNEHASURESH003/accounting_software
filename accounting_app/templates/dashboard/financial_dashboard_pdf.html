@@ -1,0 +1,87 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Helvetica, sans-serif; font-size: 12px; }
+    h2, h4 { color: #2c3e50; }
+    .section { margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #999; padding: 6px; text-align: left; }
+    th { background-color: #f0f0f0; }
+  </style>
+</head>
+<body>
+
+  <h2>Financial Dashboard</h2>
+
+  <div class="section">
+    <h4>Financial Summary</h4>
+    <table>
+      <tr><th>Total Revenue</th><td>INR {{ revenue|floatformat:2 }}</td></tr>
+      <tr><th>Total Expenses</th><td>INR {{ expenses|floatformat:2 }}</td></tr>
+      <tr><th>Net Profit</th><td>INR {{ net_profit|floatformat:2 }}</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h4>Outstanding Invoices</h4>
+    <table>
+      <tr><th>Amount Due</th><td>INR{{ outstanding_with_tax|default_if_none:"0.00"|floatformat:2 }}</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h4>Top Clients</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Total Invoiced</th>
+        </tr>
+      </thead>
+      <tbody>
+       {% for c in top_clients %}
+  <tr>
+    <td>{{ c.client_name }}</td>
+    <td>INR{{ c.total_with_tax|default_if_none:"0.00"|floatformat:2 }}</td>
+  </tr>
+{% empty %}
+  <tr><td colspan="2">No client data.</td></tr>
+{% endfor %}
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h4>Tax Summary</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Tax Type</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tax in tax_summary %}
+        <tr>
+          <td>{{ tax.tax_type }}</td>
+          <td>INR {{ tax.total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h4>Total TDS Collected</h4>
+    <table>
+      <tr><td>INR {{ tds_total|floatformat:2 }}</td></tr>
+    </table>
+  </div>
+
+</body>
+</html>

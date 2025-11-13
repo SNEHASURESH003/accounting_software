@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load humanize %}  {# for intcomma formatting #}
+
+{% block 'content' %}
+<div class="container py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-0">💳 Payroll Records</h2>
+      <p class="text-muted small mb-0">Manage monthly salary, deductions, and filings.</p>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr class="align-middle text-nowrap text-center">
+              <th>👤 Employee</th>
+              <th>📅 Month</th>
+              <th>💰 Basic</th>
+              <th>🏠 HRA</th>
+              <th>➕ Allowances</th>
+              <th>🏦 PF</th>
+              <th>💊 ESI</th>
+              <th>💸 TDS</th>
+              <th><strong>Net Salary</strong></th>
+              <th>📄 Salary Slip</th>
+              {% if request.user.role == "Accountant" %}
+                <th>Status</th>
+                <th>📑 TDS Filing</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for payroll in payrolls %}
+            <tr class="text-center">
+              <td class="fw-semibold">{{ payroll.name }}</td>
+              <td>{{ payroll.month|date:"F Y" }}</td>
+              <td>₹{{ payroll.basic_salary|floatformat:2|intcomma }}</td>
+              <td>₹{{ payroll.hra|floatformat:2|intcomma }}</td>
+              <td>₹{{ payroll.other_allowances|floatformat:2|intcomma }}</td>
+              <td>₹{{ payroll.pf|floatformat:2|intcomma }}</td>
+              <td>₹{{ payroll.esi|floatformat:2|intcomma }}</td>
+              <td class="text-danger">₹{{ payroll.tds_dynamic|floatformat:2|intcomma }}</td>
+              <td class="fw-bold text-success">₹{{ payroll.net_salary_dynamic|floatformat:2 }}</td>
+
+              <!-- Salary Slip -->
+              <td>
+                <a href="{% url 'salary_slip' payroll.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                  View
+                </a>
+              </td>
+
+              {% if request.user.role == "Accountant" %}
+                <!-- Payment Status -->
+                <td>
+                  {% if not payroll.is_paid %}
+                    <form method="post" action="{% url 'mark_regular_payroll_paid' payroll.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
+                        Mark Paid
+                      </button>
+                    </form>
+                  {% else %}
+                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                      Paid
+                    </span>
+                  {% endif %}
+                </td>
+
+                <!-- Generate TDS -->
+                <td>
+                  <a href="{% url 'create_tds_from_payroll' payroll.id %}" 
+                     class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    Generate
+                  </a>
+                </td>
+              {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="{% if request.user.role == 'Accountant' %}12{% else %}10{% endif %}" 
+                  class="text-center text-muted py-4">
+                <i class="bi bi-wallet2 fs-4"></i><br>No payroll records found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+          <h4 class="mb-0">➕ Add TDS Record</h4>
+          <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary rounded-pill">
+            ← Back
+          </a>
+        </div>
+
+        <div class="card-body p-4">
+          {# Non-field errors #}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-4">
+              {% for field in form %}
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+
+                  {# Choose correct Bootstrap class per widget type #}
+                  {% if field.field.widget.input_type == "checkbox" %}
+                    <div class="form-check">
+                      {{ field|add_class:"form-check-input" }}
+                      <label class="form-check-label ms-2" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    </div>
+                  {% elif field.field.widget.input_type == "file" %}
+                    {{ field|add_class:"form-control" }}
+                  {% elif field.field.choices %}
+                    {{ field|add_class:"form-select" }}
+                  {% else %}
+                    {{ field|add_class:"form-control" }}
+                  {% endif %}
+
+                  {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+
+                  {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                      {{ field.errors|striptags }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+              <button type="button" class="btn btn-outline-secondary rounded-pill" onclick="history.back()">Cancel</button>
+              <button type="submit" class="btn btn-success rounded-pill px-4">💾 Save</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

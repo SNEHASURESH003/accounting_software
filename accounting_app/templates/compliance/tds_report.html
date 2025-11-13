@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}TDS Reports{% endblock %}
+
+{% block 'content' %}
+ <div class="form-actions">
+     
+      <a href="{% url 'quote_list' %}" class="btn btn-secondary">← Back to Quotes</a>
+         <a href="{% url 'compliances_dashboard' %}" class="btn btn-secondary">← Back</a>
+ </div>
+
+
+<div class="container my-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="fs-3 fw-semibold mb-4">📄 TDS Report for {{ client.name }}</h2>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Form 26Q</th>
+              <th>Form 24Q</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for report in tds %}
+              <tr>
+                <td>{{ report.form_26q|linebreaks }}</td>
+                <td>{{ report.form_24q|linebreaks }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="2" class="text-center text-muted">No TDS records found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+

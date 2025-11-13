@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Employee Expenses{% endblock %}
+
+{% block 'content' %}
+<div class="container mt-4">
+    <h2 class="mb-3">Employee Expense Claims</h2>
+
+  {% if request.user.role == "employee" %}
+        <a href="{% url 'submit_expense' %}" class="btn btn-primary mb-3">+ Submit New Expense</a>
+    {% endif %}
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Receipt</th>
+                <th>Status</th>
+               
+                <th>Employee</th>
+                <th>Reviewed By</th>
+                {% comment %} <th>Actions</th> {% endcomment %}
+              
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>
+  {% if expense.employee.name %}
+    {{ expense.employee.name }}
+  {% elif expense.employee.user %}
+    {{ expense.employee.user.email }}
+  {% else %}
+    <span class="text-muted">No name</span>
+  {% endif %}
+</td>
+
+                <td>{{ expense.date }}</td>
+                <td>{{ expense.category }}</td>
+                <td>₹{{ expense.amount }}</td>
+                <td>{{ expense.description|truncatewords:10 }}</td>
+                <td>
+                    {% if expense.receipt %}
+                        <a href="{{ expense.receipt.url }}" target="_blank">View</a>
+                    {% else %}
+                        <span class="text-muted">No receipt</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if expense.status == "APPROVED" %}
+                        <span class="text-success">Approved</span>
+                    {% elif expense.status == "REJECTED" %}
+                        <span class="text-danger">Rejected</span>
+                    {% else %}
+                        <span class="text-warning">Pending</span>
+                    {% endif %}
+                </td>
+
+           
+                <td>{{ expense.employee}}</td>
+                <td>
+                    {% if expense.reviewed_by %}
+                        {{ expense.reviewed_by.email }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                {% comment %} <td>
+                    {% if expense.status == "PENDING" %}
+                        <a href="{% url 'approve_expense' expense.pk %}" class="btn btn-sm btn-success">Approve</a>
+                        <a href="{% url 'reject_expense' expense.pk %}" class="btn btn-sm btn-danger">Reject</a>
+                    {% else %}
+                        <span class="text-muted">Reviewed</span>
+                    {% endif %}
+                </td> {% endcomment %}
+           
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="text-center text-muted">No expenses found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block 'content' %}
+
+<style>
+  body{ background:linear-gradient(to bottom,#e0e0e0,#d6d6d6); font-family:'Segoe UI',Arial,sans-serif; }
+  .report-wrap{
+    max-width:950px; margin:28px auto; background:linear-gradient(to bottom,#e0e0e0,#d6d6d6);
+    border:1px solid #d0d8e0; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,.05); padding:28px 34px;
+  }
+  .report-head{ display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #cfd6de; padding-bottom:12px; margin-bottom:16px; }
+  .title{ font-size:28px; font-weight:800; color:#1976d2; margin:0; }
+  .controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .btn{ padding:8px 12px; border-radius:6px; border:1px solid #cfd6de; background:#fff; cursor:pointer; }
+  .btn-primary{ background:#1976d2; color:#fff; border-color:#1976d2; }
+  .btn-link{ text-decoration:none; }
+  .back{ background:#e8eef7; color:#12438a; border-color:#b7c8ea; }
+
+  /* Summary table */
+  .aging-table{ width:100%; border-collapse:collapse; margin-top:12px; font-size:14px; }
+  .aging-table thead tr{
+    background:linear-gradient(90deg,#6a1b9a 0%,#3949ab 25%,#1976d2 50%,#0288d1 75%,#26c6da 100%);
+    color:#fff;
+  }
+  .aging-table th{ padding:12px; text-align:center; border:none; }
+  .aging-table td{ padding:12px; text-align:center; border:none; }
+  .aging-table td:first-child{ text-align:left; }
+  .aging-table tbody tr:nth-child(odd){ background:#e0e0e0; }
+  .aging-table tbody tr:nth-child(even){ background:#d6d6d6; }
+
+  /* Details table (per-invoice) */
+  .details-title{ margin-top:18px; font-weight:800; color:#1976d2; }
+  .details-table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:14px; }
+  .details-table thead tr{
+    background:linear-gradient(90deg,#6a1b9a 0%,#3949ab 25%,#1976d2 50%,#0288d1 75%,#26c6da 100%);
+    color:#fff;
+  }
+  .details-table th{ padding:10px; text-align:center; border:none; }
+  .details-table td{ padding:10px; text-align:center; border:none; background:#fff; }
+  .details-table td:first-child{ text-align:left; }
+  .details-table tbody tr:nth-child(odd) td{ background:#f6f7f9; }
+
+  .totals-box{ margin-top:14px; background:#e9ecef; padding:14px; border-radius:6px; font-size:14px; }
+  .totals-box .grand{ font-weight:800; font-size:16px; color:#d62828; }
+
+  @media print{
+    @page{ margin:0; }
+    body{ margin:0; background:#fff !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    header,.site-header,.navbar,.no-print,.controls .btn{ display:none !important; }
+    .report-wrap{ margin:0 auto; background:#fff !important; border:none !important; box-shadow:none !important; padding-bottom:24px; }
+    .aging-table thead tr,.details-table thead tr{
+      background:linear-gradient(90deg,#6a1b9a 0%,#3949ab 25%,#1976d2 50%,#0288d1 75%,#26c6da 100%) !important; color:#fff !important;
+    }
+    .aging-table,.aging-table th,.aging-table td,.details-table,.details-table th,.details-table td{ border:none !important; }
+    .aging-table tbody tr:nth-child(odd),.details-table tbody tr:nth-child(odd) td{ background:#e0e0e0 !important; }
+    .aging-table tbody tr:nth-child(even),.details-table tbody tr:nth-child(even) td{ background:#d6d6d6 !important; }
+  }
+</style>
+
+<div class="no-print" style="display:flex; justify-content:center; gap:8px; margin:12px 0;">
+  <a href="{% url 'invoice_list' %}" class="btn back btn-link">← Back to Invoices</a>
+  <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+</div>
+
+<div class="report-wrap">
+  <div class="report-head">
+    <div class="company">
+      {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo" height="56">
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div style="font-weight:800;">Inventura Tech</div>
+      {% endif %}
+    </div>
+
+    <h1 class="title">AR Aging Report</h1>
+
+    <form method="get" class="controls">
+      <select name="client" class="btn" onchange="this.form.submit()">
+        <option value="">All clients</option>
+        {% for c in clients %}
+          <option value="{{ c.id }}"
+            {% if selected_client_id|stringformat:'s' == c.id|stringformat:'s' %}selected{% endif %}>
+            {{ c.name }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <select name="show" class="btn" onchange="this.form.submit()">
+        <option value="unpaid" {% if show != 'all' %}selected{% endif %}>Only unpaid</option>
+        <option value="all" {% if show == 'all' %}selected{% endif %}>All invoices</option>
+      </select>
+
+      {% if selected_client_id or show == 'all' %}
+        <a href="{% url 'ar_aging_report' %}" class="btn">Reset</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Summary by client -->
+  <table class="aging-table">
+    <thead>
+      <tr>
+        <th>Client</th>
+        <th>Current</th>
+        <th>1–30</th>
+        <th>31–60</th>
+        <th>61–90</th>
+        <th>90+</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in client_summaries %}
+      <tr>
+        <td class="text-start">{{ c.client_name }}</td>
+        <td>₹{{ c.current|floatformat:2 }}</td>
+        <td>₹{{ c.d1_30|floatformat:2 }}</td>
+        <td>₹{{ c.d31_60|floatformat:2 }}</td>
+        <td>₹{{ c.d61_90|floatformat:2 }}</td>
+        <td>₹{{ c.d90_plus|floatformat:2 }}</td>
+        <td><strong>₹{{ c.total|floatformat:2 }}</strong></td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">No outstanding invoices found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+    {% if client_summaries %}
+    <tfoot>
+      <tr>
+        <th class="text-end">Grand Total:</th>
+        <th>₹{{ grand.current|floatformat:2 }}</th>
+        <th>₹{{ grand.d1_30|floatformat:2 }}</th>
+        <th>₹{{ grand.d31_60|floatformat:2 }}</th>
+        <th>₹{{ grand.d61_90|floatformat:2 }}</th>
+        <th>₹{{ grand.d90_plus|floatformat:2 }}</th>
+        <th>₹{{ grand.total|floatformat:2 }}</th>
+      </tr>
+    </tfoot>
+    {% endif %}
+  </table>
+
+  <div class="totals-box">
+    <div><strong>As of:</strong> {{ today }} <span class="text-muted">• Aged by <strong>invoice due date</strong></span></div>
+    <div class="grand">Grand Total Outstanding: ₹{{ grand.total|floatformat:2 }}</div>
+  </div>
+
+  {# Optional per-invoice detail (shows due dates). Only renders if you pass `invoice_rows` in context. #}
+  {% if invoice_rows %}
+    <h3 class="details-title">Invoice Details (with Due Dates)</h3>
+    <table class="details-table">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Invoice #</th>
+          <th>Invoice Date</th>
+          <th>Due Date</th>
+          <th>Days Past Due</th>
+          <th>Bucket</th>
+          <th>Outstanding (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in invoice_rows %}
+        <tr>
+          <td class="text-start">{{ r.client_name }}</td>
+          <td>#{{ r.invoice_id }}</td>
+          <td>{{ r.date }}</td>
+          <td>{{ r.due_date }}</td>
+          <td>{{ r.days_overdue }}</td>
+          <td>{{ r.bucket }}</td>
+          <td>₹{{ r.outstanding|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Goods Receipts{% endblock %}
+
+{% block 'content' %}
+<h1 class="h3 mb-3">Goods Receipts</h1>
+
+{% if request.user.is_superuser or request.user.role|lower == "accountant" %}
+  <a href="{% url 'grn_create' %}" class="btn btn-primary mb-3">New Goods Receipt</a>
+{% endif %}
+
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>GRN Number</th>
+        <th>PO Number</th>
+        <th>Date</th>
+        <th>Received By</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for grn in objects %}
+        <tr>
+          <td>{{ grn.number }}</td>
+          <td>{{ grn.po.number }}</td>
+          <td>{{ grn.date }}</td>
+          <td>{{ grn.received_by|default:"—" }}</td>
+          <td>{{ grn.notes|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5" class="text-muted text-center">No goods receipts found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+    

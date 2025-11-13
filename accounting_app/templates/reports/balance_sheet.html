@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+
+<!-- Include Poppins Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f6fa;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #212529;
+  }
+
+  .btn-download {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+
+  /* Print All button */
+  .btn-print-all {
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+    border-radius: 8px;
+    border: none;
+    color: #fff;
+    background: #1976d2;
+  }
+  .btn-print-all:hover { filter: brightness(0.92); }
+
+  .card-header { font-size: 16px; font-weight: 600; }
+  .list-group-item { font-size: 14px; }
+  .fw-semibold { font-weight: 600; }
+
+  @media (max-width: 768px) {
+    .page-title { font-size: 22px; }
+    .btn-download, .btn-print-all { font-size: 13px; padding: 0.4rem 0.8rem; }
+    .card-header { font-size: 14px; }
+    .list-group-item { font-size: 13px; }
+  }
+</style>
+
+<!-- Extra styles (trial-balance look) -->
+<style>
+  /* Gradient section headers */
+  .card .card-header.bg-primary {
+    background: linear-gradient(90deg, #1e3a8a, #2563eb) !important;
+  }
+  .card .card-header.bg-danger {
+    background: linear-gradient(90deg, #b91c1c, #ef4444) !important;
+  }
+  .card .card-header.bg-success {
+    background: linear-gradient(90deg, #166534, #22c55e) !important;
+  }
+
+  /* Card polish */
+  .card {
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 12px 28px rgba(0,0,0,.08);
+    border-radius: 16px;
+  }
+  .card-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+    padding: .85rem 1.25rem;
+    letter-spacing: .2px;
+    color: #fff;
+  }
+  .list-group-item {
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+  }
+  .list-group-item span.fw-semibold { font-variant-numeric: tabular-nums; }
+
+  /* PRINT */
+  @media print {
+    @page { size: A4; margin: 12mm; }
+
+    body { background:#fff !important; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    /* Hide the SITE header/nav bars ONLY (keep page title) */
+    header, .site-header, .navbar, .topbar, .app-header, .main-header { display:none !important; }
+
+    /* Hide action buttons on paper */
+    .btn-download, .btn-print-all, .form-actions { display:none !important; }
+
+    /* Compact layout for paper */
+    .container, .px-3, .px-md-5, .py-4 { padding:0 !important; }
+    .card { box-shadow:none !important; border:1px solid #ddd; page-break-inside:avoid; margin-bottom:10mm; }
+
+    /* Ensure gradients print nicely */
+    .card .card-header.bg-primary { background: linear-gradient(90deg, #1e3a8a, #2563eb) !important; color:#fff !important; }
+    .card .card-header.bg-danger  { background: linear-gradient(90deg, #b91c1c, #ef4444) !important; color:#fff !important; }
+    .card .card-header.bg-success { background: linear-gradient(90deg, #166534, #22c55e) !important; color:#fff !important; }
+  }
+</style>
+
+<div class="container px-3 px-md-5 py-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+    <!-- ✅ This heading WILL print -->
+    <h2 class="page-title mb-3 mb-md-0">📊 Balance Sheet</h2>
+
+    <div class="d-flex gap-2">
+      {% comment %} <a href="{% url 'balance_sheet_pdf' %}" class="btn btn-outline-primary btn-download">
+        <i class="bi bi-file-earmark-pdf"></i> Download PDF
+      </a> {% endcomment %}
+      <!-- Print All (hidden in print via CSS) -->
+      <button type="button" class="btn-print-all" onclick="window.print()">🖨️ Print All</button>
+    </div>
+  </div>
+
+  <!-- Assets Section -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">Assets</div>
+    <ul class="list-group list-group-flush">
+      {% for name, amt in assets %}
+      <li class="list-group-item">
+        {{ name }}
+        <span class="fw-semibold">Rs. {{ amt }}</span>
+      </li>
+      {% empty %}
+      <li class="list-group-item text-muted">No assets recorded.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Liabilities Section -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-danger text-white">Liabilities</div>
+    <ul class="list-group list-group-flush">
+      {% for name, amt in liabilities %}
+      <li class="list-group-item">
+        {{ name }}
+        <span class="fw-semibold">Rs. {{ amt }}</span>
+      </li>
+      {% empty %}
+      <li class="list-group-item text-muted">No liabilities recorded.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Equity Section -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-success text-white">Equity</div>
+    <ul class="list-group list-group-flush">
+      {% for name, amt in equity %}
+      <li class="list-group-item">
+        {{ name }}
+        <span class="fw-semibold">Rs. {{ amt }}</span>
+      </li>
+      {% empty %}
+      <li class="list-group-item text-muted">No equity recorded.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="form-actions">
+    <a href="{% url 'account_list' %}" class="btn btn-secondary">← Back to Accounts</a>
+  </div>
+</div>
+
+{% endblock %}

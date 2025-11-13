@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<!-- Google Fonts: Poppins -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .card {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .btn {
+    border-radius: 8px;
+  }
+
+  table th, table td {
+    vertical-align: middle;
+  }
+</style>
+ <div class="form-actions">
+     
+      <a href="{% url 'bill_list' %}" class="btn btn-secondary">← Back to Vendor Bills</a>
+    </div>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-12">
+      <div class="card border-secondary">
+        <div class="card-header bg-secondary text-white rounded-top-4">
+          <h5 class="mb-0">Approvals for {{ model }} #{{ object_id }}</h5>
+        </div>
+
+        <div class="card-body">
+          {% if messages %}
+            <div class="alert alert-info">
+              <ul class="mb-0">
+                {% for message in messages %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <a href="{% url 'approval_request_create' app_label=approvals.0.target_ct.app_label|default:app_label model=model object_id=object_id %}" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-1"></i> New Approval Request
+            </a>
+          </div>
+
+          {% if approvals %}
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Requested By</th>
+                    <th>Assigned To</th>
+                    <th>Created On</th>
+                    {% if request.user.role == "accountant"  %}
+                      <th>Actions</th>
+                    {% endif %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for appr in approvals %}
+                    <tr>
+                      <td>{{ appr.pk }}</td>
+                      <td>{{ appr.title|default:"(No Title)" }}</td>
+                      <td>
+                        <span class="badge bg-info text-dark">{{ appr.status }}</span>
+                      </td>
+                      <td>{{ appr.requested_by }}</td>
+                      <td>{{ appr.assigned_to|default:"—" }}</td>
+                      <td>{{ appr.created_on|date:"Y-m-d H:i" }}</td>
+                      {% if request.user.role|lower == "accountant" %}
+                        <td>
+                          <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'approval_review' pk=appr.pk %}" class="btn btn-outline-primary">
+                              <i class="bi bi-eye"></i> Review
+                            </a>
+                            <a href="{% url 'approval_approve' pk=appr.pk %}" class="btn btn-outline-success">
+                              <i class="bi bi-check-circle"></i> Approve
+                            </a>
+                            <a href="{% url 'approval_reject' pk=appr.pk %}" class="btn btn-outline-danger">
+                              <i class="bi bi-x-circle"></i> Reject
+                            </a>
+                          </div>
+                        </td>
+                      {% endif %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted">No approvals yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

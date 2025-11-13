@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<div class="container my-4" style="max-width: 900px;">
+  <!-- Deal Header -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h2 class="fs-5 fw-semibold mb-3">📝 Deal Detail: {{ deal.title }}</h2>
+      <table class="table table-sm table-borderless mb-0">
+        <tbody>
+          <tr><th class="text-muted">Client</th><td>{{ deal.client }}</td></tr>
+          <tr><th class="text-muted">Amount</th><td>₹{{ deal.amount }}</td></tr>
+          <tr><th class="text-muted">Expected Close</th><td>{{ deal.expected_close }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Commission Section -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h4 class="fs-6 fw-semibold mb-3">💼 Commission</h4>
+      {% if commission %}
+        <table class="table table-sm table-borderless mb-3">
+          <tbody>
+            <tr><th class="text-muted">Amount</th><td>₹{{ commission.amount }}</td></tr>
+            <tr>
+              <th class="text-muted">Status</th>
+              <td>
+                {% if commission.paid %}
+                  <span class="badge bg-success">✅ Paid</span>
+                {% else %}
+                  <span class="badge bg-danger">❌ Unpaid</span>
+                {% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+    {% if not commission.paid %}
+    <form method="POST" action="{% url 'pay_commission' commission.id %}" class="mb-2">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success btn-sm w-100">✅ Mark as Paid</button>
+    </form>
+
+
+
+          {% if commission.razorpay_order_id %}
+            <form action="{% url 'razorpay_commission_payment_callback' %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="commission_id" value="{{ commission.id }}">
+              <script
+                src="https://checkout.razorpay.com/v1/checkout.js"
+                data-key="{{ razorpay_key_id }}"
+                data-amount="{{ commission.amount|floatformat:0 }}00"
+                data-currency="INR"
+                data-order_id="{{ commission.razorpay_order_id }}"
+                data-buttontext="💳 Pay Commission"
+                data-name="Your Company"
+                data-description="Commission Payment"
+                data-theme.color="#198754">
+              </script>
+            </form>
+          {% else %}
+            <p class="text-warning">⚠️ Razorpay Order not generated.</p>
+          {% endif %}
+        {% endif %}
+      {% else %}
+        <p class="text-muted mb-2">No commission generated.</p>
+        <a href="{% url 'commission_create_for_deal' deal.id %}" class="btn btn-outline-success btn-sm">Generate Commission</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Invoice Section -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h4 class="fs-6 fw-semibold mb-3">💰 Invoice</h4>
+      {% if invoice %}
+        <table class="table table-sm table-borderless mb-3">
+          <tbody>
+            <tr><th class="text-muted">Total</th><td>₹{{ invoice.total_amount }}</td></tr>
+            <tr>
+              <th class="text-muted">Status</th>
+              <td>
+                {% if invoice.is_paid %}
+                  <span class="badge bg-success">✅ Paid</span>
+                {% else %}
+                  <span class="badge bg-danger">❌ Unpaid</span>
+                {% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        {% if not invoice.is_paid %}
+          <form method="POST" action="{% url 'mark_invoice_paid' invoice.id %}" class="mb-2">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm w-100">✅ Mark as Paid</button>
+          </form>
+
+          {% if invoice.razorpay_order_id %}
+            <form action="{% url 'razorpay_invoice_payment_callback' %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+              <script
+                src="https://checkout.razorpay.com/v1/checkout.js"
+                data-key="{{ razorpay_key_id }}"
+                data-amount="{{ invoice.total_amount|floatformat:0 }}00"
+                data-currency="INR"
+                data-order_id="{{ invoice.razorpay_order_id }}"
+                data-buttontext="💳 Pay Invoice"
+                data-name="Your Company"
+                data-description="Invoice Payment"
+                data-theme.color="#0d6efd">
+              </script>
+            </form>
+          {% else %}
+            <p class="text-warning">⚠️ Razorpay Order not generated.</p>
+          {% endif %}
+        {% endif %}
+      {% else %}
+        <p class="text-muted mb-2">No invoice generated.</p>
+        <a href="{% url 'invoice_create_for_deal' deal.id %}" class="btn btn-primary btn-sm">🧾 Generate Invoice</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Quote Section -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h4 class="fs-6 fw-semibold mb-3">📄 Quote</h4>
+      {% if quote %}
+        <table class="table table-sm table-borderless mb-3">
+          <tbody>
+            <tr><th class="text-muted">Title</th><td>{{ quote.title }}</td></tr>
+            <tr><th class="text-muted">Amount</th><td>₹{{ quote.amount }}</td></tr>
+            <tr><th class="text-muted">Status</th><td>{{ quote.status }}</td></tr>
+            <tr><th class="text-muted">Paid</th><td>{{ quote.paid|yesno:"✅ Yes,❌ No" }}</td></tr>
+          </tbody>
+        </table>
+
+        <a href="{% url 'quote_detail' quote.id %}" class="btn btn-info btn-sm w-100 mb-2">View Quote</a>
+
+        {% if not quote.paid %}
+          <form method="POST" action="{% url 'mark_quote_paid' quote.id %}" class="mb-2">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary btn-sm w-100">✅ Mark as Paid</button>
+          </form>
+
+          {% if quote.razorpay_order_id %}
+            <form action="{% url 'razorpay_quote_payment_callback' %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="quote_id" value="{{ quote.id }}">
+              <script
+                src="https://checkout.razorpay.com/v1/checkout.js"
+                data-key="{{ razorpay_key_id }}"
+                data-amount="{{ quote.amount|floatformat:0 }}00"
+                data-currency="INR"
+                data-order_id="{{ quote.razorpay_order_id }}"
+                data-buttontext="💳 Pay Quote"
+                data-name="Your Company"
+                data-description="Quote Payment"
+                data-theme.color="#6f42c1">
+              </script>
+            </form>
+          {% else %}
+            <p class="text-warning">⚠️ Razorpay Order not generated.</p>
+          {% endif %}
+        {% endif %}
+      {% else %}
+        <p class="text-muted mb-2">No quote generated.</p>
+        <a href="{% url 'quote_create' deal.id %}" class="btn btn-outline-secondary btn-sm">Create Quote</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

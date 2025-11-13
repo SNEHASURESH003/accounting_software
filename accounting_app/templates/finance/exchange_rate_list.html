@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+<style>
+  .exchange-container {
+    max-width: 100%;
+    margin: 30px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 24px;
+  }
+
+  .exchange-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .exchange-header h1 {
+    font-size: 26px;
+    color: #222;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+  }
+
+  .exchange-header h1 span {
+    margin-right: 10px;
+    font-size: 30px;
+  }
+
+  .add-button {
+    display: inline-block;
+    background-color: #4f46e5;
+    color: white;
+    padding: 10px 16px;
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .add-button:hover {
+    background-color: #3730a3;
+  }
+
+  .exchange-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+  }
+
+  .exchange-table th, .exchange-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .exchange-table th {
+    background-color: #f9fafb;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .exchange-table tr:hover {
+    background-color: #f3f4f6;
+  }
+
+  @media (max-width: 768px) {
+    .exchange-table thead {
+      display: none;
+    }
+
+    .exchange-table, .exchange-table tbody, .exchange-table tr, .exchange-table td {
+      display: block;
+      width: 100%;
+    }
+
+    .exchange-table tr {
+      margin-bottom: 20px;
+      background-color: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      border-radius: 6px;
+    }
+
+    .exchange-table td {
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
+    }
+
+    .exchange-table td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 16px;
+      top: 14px;
+      font-weight: bold;
+      color: #555;
+      text-align: left;
+    }
+  }
+</style>
+
+<div class="exchange-container">
+  <div class="exchange-header">
+    <h1><span>💱</span>Exchange Rate List</h1>
+    {% if request.user.role == "Accountant" or request.user.is_superuser %}
+      <a href="{% url 'add_exchange_rate' %}" class="add-button">➕ Add Rate</a>
+    {% endif %}
+  </div>
+
+  {% if rates %}
+  <table class="exchange-table">
+    <thead>
+      <tr>
+        <th>🌍 From</th>
+        <th>🌎 To</th>
+        <th>📊 Rate</th>
+        <th>📅 Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rate in rates %}
+      <tr>
+        <td data-label="From">{{ rate.from_currency.code }}</td>
+        <td data-label="To">{{ rate.to_currency.code }}</td>
+        <td data-label="Rate">{{ rate.rate }}</td>
+        <td data-label="Date">{{ rate.date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align: center; padding: 20px; color: #777;">
+    🚫 No exchange rates available.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+

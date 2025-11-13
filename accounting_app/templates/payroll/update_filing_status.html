@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+<div class="container mt-5">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-light">
+      <h4 class="mb-0 text-primary">Update Filing Status for <strong>{{ payroll.name }}</strong></h4>
+    </div>
+
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="row">
+          {% for field in form %}
+            <div class="col-md-6 mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text }}</small>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-end mt-4">
+          <button type="submit" class="btn btn-primary px-4">💾 Save Filing</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

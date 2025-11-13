@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block 'content' %}
+<h2>📄 Quotes</h2>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Deal</th><th>Client</th><th>Amount</th><th>Created Date</th><th>Status</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for quote in quotes %}
+      <tr>
+        <td>{{ quote.deal.title }}</td>
+        <td>{{ quote.deal.client }}</td>
+        <td>₹{{ quote.amount }}</td>
+        <td>{{ quote.created_date }}</td>
+        <td>{{ quote.status }}</td>
+        <td>
+          <a href="{% url 'quote_detail' quote.id %}" class="btn btn-sm btn-info">View</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

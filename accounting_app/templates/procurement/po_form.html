@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}{{ form.instance.pk|yesno:"Edit PO,New PO" }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .required:after {
+    content: " *";
+    color: red;
+  }
+  .form-error {
+    color: red;
+    font-size: 0.875em;
+  }
+  .form-label {
+    font-weight: 500;
+  }
+</style>
+{% endblock %}
+
+{% block 'content' %}
+<h1 class="h3 mb-3">{{ form.instance.pk|yesno:"Edit Purchase Order,Create Purchase Order" }}</h1>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <!-- Main Form -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <label class="form-label {% if form.number.field.required %}required{% endif %}">{{ form.number.label }}</label>
+      {{ form.number }}{% for e in form.number.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label {% if form.vendor.field.required %}required{% endif %}">{{ form.vendor.label }}</label>
+      {{ form.vendor }}{% for e in form.vendor.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label {% if form.currency.field.required %}required{% endif %}">{{ form.currency.label }}</label>
+      {{ form.currency }}{% for e in form.currency.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label {% if form.exchange_rate.field.required %}required{% endif %}">{{ form.exchange_rate.label }}</label>
+      {{ form.exchange_rate }}{% for e in form.exchange_rate.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label {% if form.pr.field.required %}required{% endif %}">{{ form.pr.label }}</label>
+      {{ form.pr }}{% for e in form.pr.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label {% if form.status.field.required %}required{% endif %}">{{ form.status.label }}</label>
+      {{ form.status }}{% for e in form.status.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label {% if form.order_date.field.required %}required{% endif %}">{{ form.order_date.label }}</label>
+      {{ form.order_date }}{% for e in form.order_date.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label {% if form.expected_date.field.required %}required{% endif %}">{{ form.expected_date.label }}</label>
+      {{ form.expected_date }}{% for e in form.expected_date.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+
+    <div class="col-12">
+      <label class="form-label {% if form.notes.field.required %}required{% endif %}">{{ form.notes.label }}</label>
+      {{ form.notes }}{% for e in form.notes.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+    </div>
+  </div>
+
+  <!-- Line Items -->
+  <h2 class="h5 mb-2">Lines</h2>
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}
+    <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+  {% endif %}
+
+  <div class="table-responsive mb-3">
+    <table class="table align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Product <span style="color:red">*</span></th>
+          <th>Description <span style="color:red">*</span></th>
+          <th class="text-end">Qty <span style="color:red">*</span></th>
+          <th class="text-end">Unit Price <span style="color:red">*</span></th>
+          <th class="text-end">Qty Received</th>
+          <th>Account <span style="color:red">*</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in formset.forms %}
+        <tr>
+          {{ f.id }}
+          <td>
+            {{ f.product }}
+            {% for e in f.product.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+          </td>
+          <td>
+            {{ f.description }}
+            {% for e in f.description.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+          </td>
+          <td class="text-end">
+            {{ f.qty }}
+            {% for e in f.qty.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+          </td>
+          <td class="text-end">
+            {{ f.unit_price }}
+            {% for e in f.unit_price.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+          </td>
+          <td class="text-end">
+            {{ f.qty_received }}
+            {% for e in f.qty_received.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+          </td>
+          <td>
+            {{ f.account }}
+            {% for e in f.account.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Buttons -->
+  <button class="btn btn-primary" type="submit">Save PO</button>
+  <a class="btn btn-secondary ms-2" href="{% url 'po_list' %}">Cancel</a>
+</form>
+{% endblock %}

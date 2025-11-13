@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<h3>Approvals for Journal Entry #{{ entry.pk }}</h3>
+<p>{{ entry.description }}</p>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Requested By</th>
+      <th>Assigned To</th>
+      <th>Status</th>
+      <th>Created On</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for approval in approvals %}
+    <tr>
+      <td>{{ approval.requested_by }}</td>
+      <td>{{ approval.assigned_to|default:"-" }}</td>
+      <td>{{ approval.status }}</td>
+      <td>{{ approval.created_on|date:"Y-m-d H:i" }}</td>
+      <td>
+        {% if approval.status == "PENDING" %}
+          <a href="{% url 'je_approve' approval.pk %}" class="btn btn-success btn-sm">Approve</a>
+          <a href="{% url 'je_reject' approval.pk %}" class="btn btn-danger btn-sm">Reject</a>
+        {% else %}
+          <span class="text-muted">No actions</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">No approvals yet.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<a href="{% url 'journal_entry_list' %}" class="btn btn-secondary">Back to list</a>
+
+{% endblock %}

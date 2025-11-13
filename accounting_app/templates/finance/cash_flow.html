@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<style>
+  body{
+    background:linear-gradient(to bottom,#e0e0e0,#d6d6d6);
+    font-family:'Segoe UI',Arial,sans-serif;
+  }
+  .wrap{
+    max-width:1100px; margin:28px auto;
+    background:linear-gradient(to bottom,#e0e0e0,#d6d6d6);
+    border:1px solid #d0d8e0; border-radius:12px;
+    box-shadow:0 4px 15px rgba(0,0,0,.05); padding:26px 34px;
+  }
+  .head{ display:flex; justify-content:space-between; align-items:center;
+         border-bottom:1px solid #cfd6de; padding-bottom:12px; margin-bottom:16px; }
+  .title{ font-size:28px; font-weight:800; color:#1976d2; margin:0; }
+  .filters{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .btn{ padding:8px 12px; border-radius:6px; border:1px solid #cfd6de; background:#fff; cursor:pointer; }
+  .btn-primary{ background:#1976d2; color:#fff; border-color:#1976d2; }
+
+  .table{ width:100%; border-collapse:collapse; font-size:14px; margin-top:10px; }
+  .table thead tr{
+    background: linear-gradient(90deg,#6a1b9a 0%,#3949ab 25%,#1976d2 50%,#0288d1 75%,#26c6da 100%);
+    color:#fff;
+  }
+  .table th{ padding:12px; text-align:center; border:none; }
+  .table td{ padding:12px; border:none; background:#fff; text-align:right; white-space:nowrap; }
+  .table td:first-child{ text-align:left; }
+  .table tbody tr:nth-child(odd) td{ background:#f6f7f9; }
+
+  /* Footer row: make spacing & alignment match body rows */
+  .table tfoot th,
+  .table tfoot td{
+    background:#e3f2fd; color:#0D47A1;
+    padding:12px; text-align:right; white-space:nowrap; border:none;
+  }
+  .table tfoot th:first-child{ text-align:right; }
+
+  .pos{ color:#1B5E20; font-weight:700; }
+  .neg{ color:#B71C1C; font-weight:700; }
+  .subhead{ margin-top:22px; font-weight:700; color:#374151; }
+
+  @media print{
+    header,.site-header,.navbar,.no-print,.filters .btn{ display:none !important; }
+    body{ background:#fff !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    .wrap{ background:#fff !important; border:none !important; box-shadow:none !important; }
+    .table thead tr{
+      background: linear-gradient(90deg,#6a1b9a 0%,#3949ab 25%,#1976d2 50%,#0288d1 75%,#26c6da 100%) !important; color:#fff !important;
+    }
+  }
+</style>
+
+<div class="no-print" style="display:flex; justify-content:center; gap:8px; margin-top:10px;">
+  <a href="{{ cash_flow_url }}" class="btn">↻ Refresh</a>
+  <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+</div>
+
+<div class="wrap">
+  <div class="head">
+    <div class="brand-block">
+   {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo" height="56">
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div style="font-weight:800;">Inventura Tech</div>
+      {% endif %}
+    </div>
+    <h1 class="title">Cash Flow</h1>
+
+    <!-- Filters that stay on the same URL -->
+    <form method="get" action="{{ cash_flow_url }}" class="filters" id="filtersForm">
+      <select name="year" class="btn" onchange="document.getElementById('filtersForm').submit()">
+        {% for y in years %}
+          <option value="{{ y }}" {% if year == y %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="project" class="btn" onchange="document.getElementById('filtersForm').submit()">
+        <option value="">All projects</option>
+        {% for p in projects %}
+          <option value="{{ p.id }}" {% if selected_project_id == p.id|stringformat:'s' %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- ensure unchecked checkbox still sends a value -->
+      <input type="hidden" name="include_ar" value="0">
+      <label class="btn" style="display:flex; gap:6px; align-items:center; cursor:pointer;">
+        <input type="checkbox" name="include_ar" value="1"
+               {% if include_ar %}checked{% endif %}
+               onchange="document.getElementById('filtersForm').submit()">
+        Include AR (Unpaid Invoices)
+      </label>
+
+      <!-- Reset = same URL with no query params -->
+      <a href="{{ cash_flow_url }}" class="btn">Reset</a>
+    </form>
+  </div>
+
+  <!-- Monthly summary -->
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Month</th>
+          <th>Projected Inflow (₹)</th>
+          <th>AR Due (₹)</th>
+          <th>Total Inflow (₹)</th>
+          <th>Outflow (₹)</th>
+          <th>Net (₹)</th>
+          <th>Cumulative (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td style="text-align:left;">{{ r.month_name }}</td>
+            <td>₹{{ r.proj_inflow|floatformat:2 }}</td>
+            <td>₹{{ r.ar_inflow|floatformat:2 }}</td>
+            <td>₹{{ r.total_inflow|floatformat:2 }}</td>
+            <td>₹{{ r.outflow|floatformat:2 }}</td>
+            <td class="{% if r.net >= 0 %}pos{% else %}neg{% endif %}">₹{{ r.net|floatformat:2 }}</td>
+            <td class="{% if r.cumulative >= 0 %}pos{% else %}neg{% endif %}">₹{{ r.cumulative|floatformat:2 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th style="text-align:right;">Total:</th>
+          <td>₹{{ totals.proj_inflow|floatformat:2 }}</td>
+          <td>₹{{ totals.ar_inflow|floatformat:2 }}</td>
+          <td>₹{{ totals.total_inflow|floatformat:2 }}</td>
+          <td>₹{{ totals.outflow|floatformat:2 }}</td>
+          <td class="{% if totals.net >= 0 %}pos{% else %}neg{% endif %}">
+            ₹{{ totals.net|floatformat:2 }}
+          </td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Detailed lines -->
+  <div class="subhead">Projected Inflows</div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Date</th>
+          <th style="text-align:left;">Project</th>
+          <th style="text-align:left;">Account</th>
+          <th style="text-align:left;">Description</th>
+          <th>Amount (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in inflow_lines %}
+        <tr>
+          <td style="text-align:left;">{{ l.date }}</td>
+          <td style="text-align:left;">{{ l.project.name|default:"—" }}</td>
+          <td style="text-align:left;">{{ l.account.name|default:"—" }}</td>
+          <td style="text-align:left;">{{ l.description|default:"—" }}</td>
+          <td>₹{{ l.amount|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted">No projected inflows.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subhead">Projected Outflows</div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Date</th>
+          <th style="text-align:left;">Project</th>
+          <th style="text-align:left;">Account</th>
+          <th style="text-align:left;">Description</th>
+          <th>Amount (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in outflow_lines %}
+        <tr>
+          <td style="text-align:left;">{{ l.date }}</td>
+          <td style="text-align:left;">{{ l.project.name|default:"—" }}</td>
+          <td style="text-align:left;">{{ l.account.name|default:"—" }}</td>
+          <td style="text-align:left;">{{ l.description|default:"—" }}</td>
+          <td>₹{{ l.amount|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted">No projected outflows.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+

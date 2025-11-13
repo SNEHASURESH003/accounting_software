@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}E-Invoice Details{% endblock %}
+
+{% block 'content' %}
+ <div class="form-actions">
+     
+      <a href="{% url 'quote_list' %}" class="btn btn-secondary">← Back to Quotes</a>
+         <a href="{% url 'compliances_dashboard' %}" class="btn btn-secondary">← Back</a>
+ </div>
+
+<div class="container my-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="fs-3 fw-semibold mb-4">🧾 E-Invoices for {{ client.name }}</h2>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Invoice ID</th>
+              <th>IRN</th>
+              <th>Ack No</th>
+              <th>Status</th>
+              <th>Generated On</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for einvoice in einvoices %}
+              <tr>
+                <td>{{ einvoice.invoice.id }}</td>
+                <td>{{ einvoice.irn }}</td>
+                <td>{{ einvoice.ack_no }}</td>
+                <td>
+                  {% if einvoice.status == "Valid" %}
+                    <span class="badge bg-success">{{ einvoice.status }}</span>
+                  {% elif einvoice.status == "Cancelled" %}
+                    <span class="badge bg-danger">{{ einvoice.status }}</span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ einvoice.status }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ einvoice.generated_on }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted">No e-invoice records found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

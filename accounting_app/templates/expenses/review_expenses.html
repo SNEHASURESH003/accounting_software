@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block 'content' %}
+<h2>Review Expenses</h2>
+<table class="table">
+  <thead><tr><th>User</th>
+    <th>Date</th>
+    <th>Category</th
+      ><th>Amount</th>    
+     {% if request.user.role == 'Accountant' or request.user.is_superuser %}
+     <th>Actions</th>
+    {%endif%}
+  </tr></thead>
+ <tbody>
+  {% for expense in expenses %}
+    <tr>
+      <td>{{ expense.employee }}</td>
+      <td>{{ expense.date }}</td>
+      <td>{{ expense.get_category_display }}</td>
+      <td>{{ expense.amount }}</td>
+           {% if request.user.role == 'Accountant' or request.user.is_superuser %}
+      <td>
+        <a href="{% url 'approve_expense' expense.pk %}" class="btn btn-success btn-sm">Approve</a>
+   
+        <a href="{% url 'reject_expense' expense.pk %}" class="btn btn-danger btn-sm">Reject</a>
+             {%endif%}
+      </td>
+    </tr>
+  {% empty %}
+    <tr>
+      <td colspan="5" class="text-center text-muted">No pending expenses to review.</td>
+    </tr>
+  {% endfor %}
+</tbody>
+
+</table>
+{% endblock %}

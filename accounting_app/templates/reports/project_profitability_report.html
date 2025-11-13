@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block 'content' %}  {# Fixed block name #}
+
+<style>
+  body {
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  @media print {
+    header, .site-header, .navbar, .no-print, button, .btn-download { display:none !important; }
+    @page { margin: 10mm; }
+    body { margin:0; background:#fff !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+
+  .report-wrapper {
+    max-width: 900px; margin: 30px auto;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    padding: 36px 44px; border: 1px solid #d0d8e0; border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  }
+
+  .report-header { display:flex; justify-content:space-between; align-items:center;
+    border-bottom: 1px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 18px; }
+
+  h2 { margin: 10px 0 16px; text-align:center; }
+  .report-table { width:100%; border-collapse: collapse; font-size: 14px; }
+  .report-table th {
+    background:#f3f4f6; color:#0f0e0e; padding:10px; border:1px solid #e5e7eb; text-align:center;
+  }
+  .report-table td {
+    padding:10px; border:1px solid #e5e7eb; text-align:center; background:#fff;
+  }
+  .report-table tbody tr:nth-child(odd) td { background:#fafafa; }
+
+  .actions { display:flex; gap:10px; margin:12px; }
+  .btn-download {
+    display:inline-block; padding:8px 12px; border-radius:8px; text-decoration:none;
+    background:#198754; color:#fff; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,.08);
+  }
+</style>
+
+<!-- Actions -->
+<div class="no-print actions">
+  <button onclick="window.print()">🖨️ Print Report</button>
+</div>
+
+<div class="report-wrapper">
+  <!-- Header -->
+  <div class="report-header">
+    <div class="company-logo">
+      {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo" height="64"/>
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div><strong>Inventura Tech</strong></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Title -->
+  <h2>📈 Project-Wise Profitability Report</h2>
+
+  <div class="table-responsive">
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Client</th>
+          <th>Income (₹)</th>
+          <th>Expenses (₹)</th>
+          <th>Profit (₹)</th>
+          <th>Margin (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in report_data %}
+        <tr>
+          <td><strong>{{ row.project_name }}</strong></td>
+          <td>{{ row.client }}</td>
+          <td>₹{{ row.income|floatformat:2 }}</td>
+          <td>₹{{ row.expense|floatformat:2 }}</td>
+          <td style="{% if row.profit < 0 %}background-color:#FDECEA;color:#B71C1C;font-weight:700;{% elif row.profit > 0 %}background-color:#E8F5E9;color:#1B5E20;font-weight:700;{% endif %}">
+            ₹{{ row.profit|floatformat:2 }}
+          </td>
+          <td style="{% if row.margin < 0 %}background-color:#FDECEA;color:#B71C1C;font-weight:700;{% elif row.margin > 50 %}background-color:#E8F5E9;color:#1B5E20;font-weight:700;{% else %}background-color:#FFF3CD;color:#8A6D3B;font-weight:700;{% endif %}">
+            {{ row.margin|floatformat:2 }}%
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-muted text-center">No project data available.</td>
+        </tr>
+        {% endfor %}
+
+        {% if total_income or total_expense or total_profit %}
+        <tr>
+          <td colspan="2" style="text-align:right; background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000;">
+            Total
+          </td>
+          <td style="background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000; text-align:right;">
+            ₹{{ total_income|floatformat:2 }}
+          </td>
+          <td style="background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000; text-align:right;">
+            ₹{{ total_expense|floatformat:2 }}
+          </td>
+          <td style="background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000; text-align:right;">
+            ₹{{ total_profit|floatformat:2 }}
+          </td>
+          <td style="background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000;">
+            {{ total_margin|floatformat:2 }}%
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

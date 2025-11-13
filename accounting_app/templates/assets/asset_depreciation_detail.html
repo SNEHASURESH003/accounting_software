@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Depreciation Schedule - {{ asset.name }}{% endblock %}
+
+{% block 'content' %}
+<div class="container mt-4">
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">📉 Depreciation Schedule for <strong>{{ asset.name }}</strong></h4>
+        </div>
+        <div class="card-body">
+
+            {% if asset.is_maintenance_due %}
+                <div class="alert alert-warning d-flex align-items-center">
+                    ⚠️ <strong class="ms-2">Maintenance due on {{ asset.next_maintenance_date }}</strong>
+                </div>
+            {% endif %}
+
+            {% if asset.disposed %}
+                <div class="alert alert-danger">
+                    <strong>Note:</strong> This asset was <strong>disposed on {{ asset.disposal_date }}</strong>. No further depreciation is applied.
+                </div>
+            {% elif asset.written_off %}
+                <div class="alert alert-info">
+                    <strong>Note:</strong> This asset has been <strong>written off</strong>. Depreciation may have stopped, but it remains recorded in the books.
+                </div>
+            {% endif %}
+
+            <div class="row gy-3">
+                <div class="col-md-6"><strong>Asset Tag:</strong> {{ asset.asset_tag }}</div>
+                <div class="col-md-6"><strong>Category:</strong> {{ asset.get_category_display }}</div>
+                <div class="col-md-6"><strong>Purchase Price:</strong> ₹{{ asset.purchase_price }}</div>
+                <div class="col-md-6"><strong>Useful Life:</strong> {{ asset.useful_life }} years</div>
+                {% if asset.warranty_expiry %}
+                    <div class="col-md-6"><strong>Warranty Expiry:</strong> {{ asset.warranty_expiry|date:"M d, Y" }}</div>
+                {% endif %}
+                {% if asset.maintenance_schedule %}
+                    <div class="col-md-6"><strong>Maintenance Schedule:</strong> {{ asset.maintenance_schedule }}</div>
+                {% endif %}
+                <div class="col-md-6"><strong>Disposed:</strong> {{ asset.disposed|yesno:"Yes,No" }}</div>
+                {% if asset.disposed %}
+                    <div class="col-md-6"><strong>Disposal Date:</strong> {{ asset.disposal_date|date:"M d, Y" }}</div>
+                    <div class="col-md-6"><strong>Disposal Value:</strong> ₹{{ asset.disposal_value }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">📆 Depreciation History</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Depreciation Amount</th>
+                            <th>Accumulated Depreciation</th>
+                            <th>Net Book Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if entries %}
+                            {% for entry in entries %}
+                                <tr>
+                                    <td>{{ entry.date }}</td>
+                                    <td>₹{{ entry.amount }}</td>
+                                    <td>₹{{ entry.accumulated }}</td>
+                                    <td>₹{{ entry.net_book_value }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No depreciation records found.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'asset_list' %}" class="btn btn-outline-secondary">⬅ Back to Assets</a>
+    </div>
+
+</div>
+{% endblock %}

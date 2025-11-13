@@ -1,0 +1,164 @@
+
+{% extends "base.html" %}
+{% block title %}PO {{ object.number }}{% endblock %}
+
+{% block 'content' %}
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      media="all">
+
+<style>
+  /* Will be set dynamically to your real footer height */
+  :root { --footer-height: 160px; }
+
+  .page-title { font-size: 28px; font-weight: 700; margin-bottom: 20px; color: #111827; }
+  .card { border: none; border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.06); overflow: hidden; }
+  .card-header { background:#f9fafb; font-weight:600; font-size:15px; padding:14px 20px; border-bottom:1px solid #e5e7eb; }
+  .table th { font-size:14px; font-weight:600; color:#4b5563; background:#f3f4f6; }
+  .table td { font-size:15px; color:#374151; }
+  .table thead th { border-bottom:none; }
+  .info-table th { width:180px; font-weight:600; color:#6b7280; }
+  .status-badge { padding:6px 14px; font-size:14px; font-weight:600; border-radius:9999px; background:#e0e7ff; color:#4338ca; }
+
+  .btn { border-radius:8px; padding:8px 18px; font-size:14px; font-weight:500; transition:.2s; }
+  .btn-gradient { background:linear-gradient(135deg,#6366f1,#3b82f6); color:#fff; border:none; }
+  .btn-gradient:hover { opacity:.9; transform: translateY(-1px); }
+
+  /* Prevent printed footer from overlapping the content */
+  .po-sheet { padding-bottom: var(--footer-height); }
+
+  /* ===== PRINT ===== */
+  @media print {
+    @page { margin: 12mm; }
+    body { background:#fff !important; }
+    header, .site-header, .navbar, .sidebar, .topbar, .app-header,
+    .no-print { display: none !important; }
+
+    .card { box-shadow:none !important; border:1px solid #e5e7eb; }
+    .table th, .table td { border:1px solid #cfd8dc !important; }
+    .table thead th { background:#eef2f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    /* Show your base template footer and stick it to the page bottom */
+    footer, .site-footer {
+      position: fixed !important;
+      bottom: 0; left: 0; right: 0;
+      display: block !important;
+      visibility: visible !important;
+      z-index: 9999;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    /* Reserve space equal to footer height */
+    .po-sheet { padding-bottom: var(--footer-height) !important; }
+
+    /* Remove white circular badges if social icons exist */
+    footer .social a, footer .social .btn, footer .social .circle,
+    .site-footer .social a, .site-footer .social .btn, .site-footer .social .circle {
+      background: transparent !important; box-shadow: none !important; border: 0 !important;
+    }
+    footer .social i, footer .social svg,
+    .site-footer .social i, .site-footer .social svg {
+      display: inline-block !important; color:#0d6efd !important; fill: currentColor !important;
+    }
+    footer .social li, footer .social a,
+    .site-footer .social li, .site-footer .social a {
+      padding:0 !important; margin:0 .6rem 0 0 !important;
+    }
+  }
+  /* === /PRINT === */
+</style>
+
+<div class="po-sheet">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title">📄 Purchase Order #{{ object.number }}</h1>
+    <div class="d-flex gap-2 no-print">
+      <a href="{% url 'bill_list' %}" class="btn btn-outline-secondary">← Back to Vendor Bills</a>
+      <button type="button" class="btn btn-gradient" onclick="window.print()">🖨️ Print PO</button>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">📌 Order Details</div>
+    <div class="table-responsive">
+      <table class="table mb-0 info-table">
+        <tbody>
+          <tr><th>Vendor</th><td>{{ object.vendor }}</td></tr>
+          {% comment %} <tr><th>Project</th><td>{{ object.project|default:"—" }}</td></tr>
+          <tr><th>Cost Center</th><td>{{ object.cost_center|default:"—" }}</td></tr> {% endcomment %}
+          <tr><th>Status</th><td><span class="status-badge">{{ object.get_status_display }}</span></td></tr>
+          <tr><th>Total</th><td><strong>₹{{ object.total_amount|floatformat:2 }}</strong></td></tr>
+          <tr><th>Order Date</th><td>{{ object.order_date }}</td></tr>
+          <tr><th>Expected</th><td>{{ object.expected_date|default:"—" }}</td></tr>
+          <tr><th>Created By</th><td>{{ object.created_by }} ({{ object.created_on|date:"Y-m-d H:i" }})</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">📦 Order Lines</div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Description</th>
+            <th class="text-end">Qty</th>
+            <th class="text-end">Unit Price</th>
+            <th class="text-end">Line Total</th>
+            <th class="text-end">Received</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for li in object.lines.all %}
+          <tr>
+            <td>{{ li.product }}</td>
+            <td>{{ li.description }}</td>
+            <td class="text-end">{{ li.qty }}</td>
+            <td class="text-end">₹{{ li.unit_price|floatformat:2 }}</td>
+            <td class="text-end fw-semibold">₹{{ li.line_total|floatformat:2 }}</td>
+            <td class="text-end">{{ li.qty_received }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">No order lines.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="d-flex gap-3 no-print">
+    <a href="{% url 'po_list' %}" class="btn btn-outline-secondary">⬅ Back to list</a>
+    {% if object.status != "APPROVED" and request.user.role == "accountant" %}
+      <form method="post" action="{% url 'po_submit' pk=object.pk %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-gradient">📤 Submit for Approval</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  // Make the reserved space match your actual footer height (works for screen & print)
+  (function () {
+    function setFooterHeightVar() {
+      var f = document.querySelector('footer.site-footer, footer, .site-footer');
+      if (f) {
+        var h = f.offsetHeight || 160;
+        document.documentElement.style.setProperty('--footer-height', h + 'px');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', setFooterHeightVar);
+    window.addEventListener('resize', setFooterHeightVar);
+    if (window.matchMedia) {
+      var mql = window.matchMedia('print');
+      mql.addEventListener ? mql.addEventListener('change', setFooterHeightVar)
+                           : mql.addListener(setFooterHeightVar);
+    }
+    window.onbeforeprint = setFooterHeightVar;
+  })();
+</script>
+
+{% endblock %}

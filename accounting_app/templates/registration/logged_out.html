@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+<form method="post" action="{% url 'logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="dropdown-item text-danger" style="border:none; background:none;">
+        <i class="bi bi-box-arrow-right me-2"></i>Logout
+    </button>
+</form>
+
+{% endblock %}

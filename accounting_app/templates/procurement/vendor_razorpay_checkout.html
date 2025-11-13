@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block 'content' %}
+<h2>Pay Vendor Bill #{{ bill.number }}</h2>
+<p>Vendor: {{ bill.vendor.name }}</p>
+<p>Total: ₹{{ bill.total }}</p>
+
+<button id="rzp-button">Pay with Razorpay</button>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+    "key": "{{ razorpay_key }}",
+    "amount": "{{ amount }}",
+    "currency": "INR",
+    "name": "{{ bill.vendor.name }}",
+    "description": "Bill #{{ bill.number }}",
+    "order_id": "{{ order_id }}",
+    "handler": function (response){
+        alert("✅ Payment successful!");
+        window.location.href = "{% url 'vendor_payment_success' bill.pk %}";
+    },
+    "prefill": {
+        "name": "{{ bill.vendor.name }}",
+        "email": "{{ bill.vendor.email }}"
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+var rzp1 = new Razorpay(options);
+document.getElementById('rzp-button').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+{% endblock %}

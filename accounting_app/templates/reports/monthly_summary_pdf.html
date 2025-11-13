@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Monthly Summary Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h2 {
+            color: #222;
+            margin-bottom: 15px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 4px 0;
+            font-size: 14px;
+        }
+        strong {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Monthly Summary – {{ today|date:"F Y" }}</h2>
+    <ul>
+        <li>Invoices this month: <strong>{{ invoice_count }}</strong></li>
+        <li>Payments received: <strong>{{ payment_count }}</strong></li>
+        <li>Employee Expenses: <strong>{{ expense_count }}</strong></li>
+    </ul>
+</body>
+</html>

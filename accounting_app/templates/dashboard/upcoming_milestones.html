@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block 'content' %}
+<h2>⏰ Upcoming Milestones (Next 7 Days)</h2>
+
+{% if milestones %}
+  <ul class="list-group">
+    {% for milestone in milestones %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ milestone.name }} (Due: {{ milestone.expected_date }})
+        <a href="{% url 'generate_invoice_for_milestone' milestone.id %}" class="btn btn-sm btn-outline-primary">
+          Generate Invoice
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No upcoming milestones in the next 7 days.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<div class="container-fluid px-0">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark mb-0">📊 Project Costing Report</h2>
+    {% if request.user.role == "Accountant" %}
+      <a href="{% url 'create_project' %}" class="btn btn-primary px-4 py-2 shadow-sm rounded-pill">
+        ➕ New Project
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- Search / Filter -->
+  <form method="GET" class="row g-3 mb-3">
+    <div class="col-md-4">
+      <input type="text" name="project" class="form-control" placeholder="Search by Project" value="{{ project_filter }}">
+    </div>
+    <div class="col-md-4">
+      <input type="text" name="client" class="form-control" placeholder="Search by Client" value="{{ client_filter }}">
+    </div>
+    <div class="col-md-4">
+      <button type="submit" class="btn btn-primary px-4">🔍 Search</button>
+      <a href="{% url 'project_costing_report' %}" class="btn btn-secondary px-3">Reset</a>
+    </div>
+  </form>
+
+  <!-- Not Found Alert -->
+  {% if not_found %}
+  <div class="alert alert-warning text-center mb-3">
+    ⚠️ No projects found matching your search criteria.
+  </div>
+  {% endif %}
+
+  <!-- Table Section (only if rows exist) -->
+  {% if page_obj.object_list %}
+  <div class="table-responsive shadow-sm border rounded-3">
+    <table class="table table-hover align-middle table-bordered table-striped mb-0">
+      <thead class="table-light text-center align-middle">
+        <tr>
+          <th>📁 Project</th>
+          <th>👤 Client</th>
+          <th>📌 Stages</th>
+          <th>🗓️ Start</th>
+          <th>🗓️ End</th>
+          <th>💰 Budget</th>
+          <th>📉 Variance</th>
+          <th>📈 Income</th>
+          <th>📉 Expense</th>
+          <th>⏱️ Hours</th>
+          <th>📊 Profit</th>
+          <th>🔗 Trello ID</th>
+          <th>📅 Created</th>
+          <th>✏️ Modified</th>
+          <th>✏️ Edit</th>
+          <th>🖨️ Print</th>
+        </tr>
+      </thead>
+      <tbody class="text-center">
+        {% for row in page_obj %}
+        <tr>
+          <!-- Project -->
+          <td class="fw-semibold text-start">{{ row.project_name }}</td>
+
+          <!-- Client -->
+          <td>{{ row.client.name }}</td>
+
+          <!-- Stages -->
+          <td class="text-start">
+            {% if row.stages %}
+              <div class="accordion accordion-flush" id="stagesAccordion-{{ row.project_id }}">
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="heading-{{ row.project_id }}">
+                    <button class="accordion-button collapsed px-2 py-1" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse-{{ row.project_id }}" aria-expanded="false" aria-controls="collapse-{{ row.project_id }}">
+                      Show Stages ▼
+                    </button>
+                  </h2>
+                  <div id="collapse-{{ row.project_id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ row.project_id }}" data-bs-parent="#stagesAccordion-{{ row.project_id }}">
+                    <div class="accordion-body p-2">
+                      <ul class="list-unstyled mb-1 small">
+                        {% for st in row.stages %}
+                          <li>🔹 <strong>{{ st.name }}</strong> (Order: {{ st.order }})</li>
+                        {% endfor %}
+                      </ul>
+                      {% if row.stage_expenses %}
+                        <hr class="my-1">
+                        <strong>Expenses:</strong>
+                        <ul class="list-unstyled mb-0 small">
+                          {% for se in row.stage_expenses %}
+                            <li>{{ se.stage__name|default:"Unassigned" }} – ₹{{ se.total|default:0|floatformat:2 }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+
+          <!-- Dates -->
+          <td>{{ row.start_date|date:"Y-m-d"|default:"–" }}</td>
+          <td>{{ row.end_date|date:"Y-m-d"|default:"–" }}</td>
+
+          <!-- Budget / Variance / Income / Expense -->
+          <td class="text-end">₹{{ row.budget|floatformat:2 }}</td>
+          <td class="text-end">₹{{ row.budget_variance|floatformat:2 }}</td>
+          <td class="text-end text-success">₹{{ row.income|floatformat:2 }}</td>
+          <td class="text-end text-danger">₹{{ row.expense|floatformat:2 }}</td>
+
+          <!-- Hours -->
+          <td>{{ row.time_hours|default:0 }}</td>
+
+          <!-- Profit -->
+          <td class="fw-bold text-end {% if row.net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">₹{{ row.net_profit|floatformat:2 }}</td>
+
+          <!-- Trello -->
+          <td class="text-start">{% if row.trello_board_id %}{{ row.trello_board_id }}{% else %}-{% endif %}</td>
+
+          <!-- Metadata -->
+          <td>{{ row.created|date:"Y-m-d H:i"|default:"–" }}</td>
+          <td>{{ row.modified|date:"Y-m-d H:i"|default:"–" }}</td>
+
+          <!-- Edit -->
+          <td class="text-center">
+            <a href="{% url 'edit_project' row.project_id %}" class="btn btn-sm btn-outline-warning">✏️ Edit</a>
+          </td>
+
+          <!-- Print -->
+          <td class="text-center no-print">
+            <a href="{% url 'print_project' row.project_id %}" target="_blank" class="btn btn-sm btn-outline-secondary">🖨️ Print</a>
+          </td>
+        </tr>
+        {% endfor %}
+
+        <!-- Totals Row -->
+        <tr class="table-secondary fw-bold text-end">
+          <td colspan="5">Page Totals:</td>
+          <td>₹{{ totals.budget|floatformat:2 }}</td>
+          <td>₹{{ totals.budget_variance|floatformat:2 }}</td>
+          <td class="text-success">₹{{ totals.income|floatformat:2 }}</td>
+          <td class="text-danger">₹{{ totals.expense|floatformat:2 }}</td>
+          <td>{{ totals.time_hours|default:0 }}</td>
+          <td>₹{{ totals.net_profit|floatformat:2 }}</td>
+          <td colspan="5"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <nav class="mt-3">
+    <ul class="pagination justify-content-end">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+      {% endif %}
+      <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Next</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

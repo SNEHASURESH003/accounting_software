@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      font-size: 12px;
+      padding: 20px;
+      color: #333;
+    }
+
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    .success {
+      background-color: #e0f7e9;
+    }
+
+    .danger {
+      background-color: #fdecea;
+    }
+
+    .total-row {
+      font-weight: bold;
+      background-color: #dfe6e9;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📊 Budget vs Actual Report</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Project</th>
+      <th>Client</th>
+      <th>Budget (INR)</th>
+      <th>Actual Expense (INR)</th>
+      <th>Variance (INR)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in project_data %}
+    <tr class="{% if row.budget_variance < 0 %}danger{% elif row.budget_variance > 0 %}success{% endif %}">
+      <td>{{ row.project.name }}</td>
+      <td>{{ row.project.client.name }}</td>
+      <td>{{ row.budget|floatformat:2 }}</td>
+      <td>{{ row.expense|floatformat:2 }}</td>
+      <td>{{ row.budget_variance|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="total-row">
+      <td colspan="2">Total</td>
+      <td>{{ total_budget|floatformat:2 }}</td>
+      <td>{{ total_expense|floatformat:2 }}</td>
+      <td>{{ total_variance|floatformat:2 }}</td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>
+

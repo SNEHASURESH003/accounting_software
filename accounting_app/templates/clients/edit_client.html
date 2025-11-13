@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<style>
+  /* Card */
+  .card-modern{
+    width: min(600px, 100%);
+    border-radius: 16px;
+    border: 1px solid #e9eef5;
+    box-shadow: 0 12px 28px rgba(2,6,23,0.08);
+    overflow: hidden;
+  }
+  .card-header-modern{
+    background: linear-gradient(135deg,#2c3e50,#3f5870);
+  }
+  .card-header-modern h3{
+    font-weight: 600;
+    letter-spacing: .2px;
+  }
+
+  /* Form */
+  .form-label{
+    font-weight: 600;
+    color: #334155;
+    font-size: .95rem;
+  }
+  .form-control{
+    border: 1px solid #dbe2ea;
+    border-radius: 12px;
+    padding: 10px 12px;
+    transition: box-shadow .15s ease, border-color .15s ease, background-color .15s ease;
+    background-color: #fff;
+  }
+  .form-control:focus{
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37,99,235,.15);
+  }
+
+  /* Buttons */
+  .btn{
+    border-radius: 10px;
+    padding: .6rem 1rem;
+  }
+  .btn-primary{
+    background: #2563eb;
+    border-color: #2563eb;
+  }
+  .btn-primary:hover{
+    background: #1e40af;
+    border-color: #1e40af;
+  }
+  .btn-secondary{
+    background: #f1f5f9;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+  }
+  .btn-secondary:hover{
+    background: #e2e8f0;
+  }
+
+  /* Spacing */
+  .card-body{
+    padding: 22px 24px 18px;
+  }
+</style>
+
+<div class="container mt-5 d-flex justify-content-center">
+  <div class="card shadow-sm card-modern">
+    <div class="card-header text-white text-center card-header-modern">
+      <h3 class="mb-0">
+        {% if form.instance.pk %}Edit Client{% else %}Add New Client{% endif %}
+      </h3>
+    </div>
+
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+          <div class="mb-3">
+            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+            {% render_field field class="form-control" placeholder=field.label %}
+            {% if field.errors %}
+              <div class="text-danger mt-1">{{ field.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <div class="d-flex justify-content-between">
+          <a href="{% url 'client_list' %}" class="btn btn-secondary">Cancel</a>
+
+          <div class="d-flex gap-2">
+            {% if form.instance.pk %}
+              {# Optional Delete button on edit page (kept structure, just styled via CSS) #}
+              <form action="{% url 'client_delete' form.instance.pk %}" method="post" onsubmit="return confirm('Delete this client?');">
+                {% csrf_token %}
+                {# Button intentionally commented in your code; left as-is #}
+                {# <button type="submit" class="btn btn-danger">Delete</button> #}
+              </form>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">
+              {% if form.instance.pk %}Save Changes{% else %}Save Client{% endif %}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

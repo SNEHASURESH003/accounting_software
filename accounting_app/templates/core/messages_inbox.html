@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<style>
+  h2 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  p a {
+    text-decoration: none;
+    color: #007bff;
+    margin-right: 1rem;
+    font-weight: 600;
+  }
+  p a:hover {
+    text-decoration: underline;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+    font-family: 'Arial', sans-serif;
+    font-size: 0.9rem;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+  }
+  th {
+    background-color: #f5f5f5;
+    color: #555;
+  }
+  tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+  tr:hover {
+    background-color: #e6f2ff;
+  }
+
+  /* Flash messages */
+  {% if flash_messages %}
+  h3 + table {
+    border: 2px solid #4caf50;
+    background-color: #e8f5e9;
+  }
+  {% endif %}
+
+  /* Details box styling */
+  details {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    margin-top: 0.5rem;
+    font-family: monospace, monospace;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+  }
+  summary {
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+  }
+  summary:hover, summary:focus {
+    color: #007bff;
+  }
+
+  /* Style the "No records" message */
+  p {
+    font-style: italic;
+    color: #666;
+  }
+
+  /* Delete buttons */
+  button.delete-btn {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 0.85rem;
+  }
+  button.delete-btn:hover {
+    background: #c0392b;
+  }
+
+  /* Bulk delete buttons */
+  form.bulk-delete {
+    margin-bottom: 1rem;
+  }
+  form.bulk-delete button {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  form.bulk-delete button:hover {
+    background: #c0392b;
+  }
+</style>
+
+<h2>Message Inbox</h2>
+
+<p>
+  <a href="?">All</a> |
+  <a href="?only=messages">Messages</a> |
+  <a href="?only=errors">Errors</a>
+</p>
+{% if flash_messages %}
+  <h3>Page Messages (flash)</h3>
+
+  <form method="post" action="{% url 'clear_flash_messages' %}" class="bulk-delete">
+    {% csrf_token %}
+    <button type="submit">Delete All Flash</button>
+  </form>
+
+  <table border="1" cellpadding="6">
+    <tr><th style="width:110px;">Level</th><th>Message</th><th style="width:110px;">Delete</th></tr>
+    {% for m in flash_messages %}
+      <tr>
+        <td>{{ m.tags|default:"info" }}</td>
+        <td>{{ m.text }}</td>
+        <td>
+          <form method="post" action="{% url 'delete_flash_message' forloop.counter0 %}">
+            {% csrf_token %}
+            <button type="submit" class="delete-btn">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+
+<p><a href="?clear=1{% if only %}&only={{ only }}{% endif %}">Clear snapshot</a></p>
+
+{% if messages_all %}
+  <h3>Model Messages</h3>
+  <form method="post" action="{% url 'delete_all_messages' %}" class="bulk-delete">
+    {% csrf_token %}
+    <button type="submit">Delete All Messages</button>
+  </form>
+  <table border="1" cellpadding="6">
+    <tr>
+      <th>When</th><th>Level</th><th>Message</th><th>Object</th><th>By</th><th>Delete</th>
+    </tr>
+    {% for m in messages_all %}
+    <tr>
+      <td>{{ m.created_at }}</td>
+      <td>{{ m.level }}</td>
+      <td>{{ m.text }}</td>
+      <td>{{ m.content_type.app_label }}.{{ m.content_type.model }} #{{ m.object_id }}</td>
+      <td>{{ m.created_by|default:"—" }}</td>
+      <td>
+        <form method="post" action="{% url 'delete_message' m.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="delete-btn">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+{% if errors_all %}
+  <h3 style="margin-top:2rem;">Error Logs</h3>
+  <form method="post" action="{% url 'delete_all_errors' %}" class="bulk-delete">
+    {% csrf_token %}
+    <button type="submit">Delete All Errors</button>
+  </form>
+  <table border="1" cellpadding="6">
+    <tr>
+      <th>When</th><th>Path</th><th>Method</th><th>Exception</th><th>User</th><th>Delete</th>
+    </tr>
+    {% for e in errors_all %}
+    <tr>
+      <td>{{ e.created_at }}</td>
+      <td>{{ e.path }}</td>
+      <td>{{ e.method }}</td>
+      <td><strong>{{ e.exception_type }}</strong>: {{ e.exception_msg|truncatechars:120 }}</td>
+      <td>{{ e.user|default:"—" }}</td>
+      <td>
+        <form method="post" action="{% url 'delete_error' e.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="delete-btn">Delete</button>
+        </form>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="6">
+        <details>
+          <summary>Traceback & Request Data</summary>
+          <pre>{{ e.traceback }}</pre>
+          <div><strong>GET:</strong> {{ e.get_data }}</div>
+          <div><strong>POST:</strong> {{ e.post_data }}</div>
+        </details>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+{% if not messages_all and not errors_all %}
+  <p>No records yet.</p>
+{% endif %}
+
+{% endblock %}

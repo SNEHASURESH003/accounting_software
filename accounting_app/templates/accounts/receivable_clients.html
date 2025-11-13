@@ -1,0 +1,21 @@
+
+{% extends 'base.html' %}
+{% block 'content' %}
+<h3>Clients with Receivable Accounts</h3>
+<ul>
+  {% for account in receivable_accounts %}
+    <li><strong>{{ account.name }}</strong>
+      <ul>
+        {% for client in account.clients.all %}
+          <li>{{ client.name }} ({{ client.email }})</li>
+        {% empty %}
+          <li>No clients linked.</li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% endfor %}
+</ul>
+{% if not receivable_accounts %}
+  <p>No clients with receivable accounts found.</p>
+{% endif %}
+{% endblock %}

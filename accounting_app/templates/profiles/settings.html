@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'content' %}
+<div class="container mt-4">
+    <h2>Settings</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>Profile Info</h5>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {% if request.user.profile.profile_photo %}
+                            <img src="{{ request.user.profile.profile_photo.url }}" class="img-fluid rounded-circle mb-2" width="150">
+                        {% else %}
+                            <img src="{% static 'images/default_profile.png' %}" class="img-fluid rounded-circle mb-2" width="150">
+                        {% endif %}
+                    </div>
+                    {{ form.as_p }}
+                    <button class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card p-3">
+                <h5>Contact List</h5>
+                <ul class="list-group">
+                    {% for contact in contacts %}
+                        <li class="list-group-item d-flex align-items-center">
+                            {% if contact.profile.profile_photo %}
+                                <img src="{{ contact.profile.profile_photo.url }}" class="rounded-circle me-3" width="40">
+                            {% else %}
+                                <img src="{% static 'images/default_profile.png' %}" class="rounded-circle me-3" width="40">
+                            {% endif %}
+                            <div>
+                                <strong>{{ contact.get_fisrt_name }} {{ contact.get_last_name }}</strong><br>
+                                <small>{{ contact.email }}</small>
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No contacts found</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

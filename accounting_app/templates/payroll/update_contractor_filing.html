@@ -1,0 +1,82 @@
+<!-- templates/payroll/update_contractor_filing.html -->
+{% extends "base.html" %}
+
+{% block title %}Add/Update Contractor Filing{% endblock %}
+
+{% block 'content' %}
+<style>
+    .container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 25px 30px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-family: Arial, sans-serif;
+    }
+    h1 {
+        font-size: 1.8rem;
+        color: #333;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+    form table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 15px;
+    }
+    form table tr td:first-child {
+        padding-right: 15px;
+        font-weight: 600;
+        vertical-align: top;
+        width: 35%;
+        color: #555;
+    }
+    form table tr td:last-child {
+        vertical-align: top;
+    }
+    button[type="submit"] {
+        display: block;
+        width: 100%;
+        padding: 12px 0;
+        background-color: #007BFF;
+        border: none;
+        color: white;
+        font-size: 1.1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 15px;
+    }
+    button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+    p.back-link {
+        margin-top: 20px;
+        text-align: center;
+    }
+    p.back-link a {
+        color: #007BFF;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    p.back-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="container">
+    <h1>Update Filing for Contractor Payment #{{ payment.pk }}</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+
+        <button type="submit">Save</button>
+    </form>
+
+    <p class="back-link"><a href="{% url 'contractor_payment_list' %}">Back to Contractor Payments</a></p>
+</div>
+{% endblock %}

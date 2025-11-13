@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block 'content' %}
+<div class="container mt-5">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body">
+      <h3 class="text-center fw-bold mb-4">Admin Lists</h3>
+      
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if superusers %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Joined</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for su in superusers %}
+            <tr>
+              <td>{{ su.email }}</td>
+              <td>{{ su.first_name }} {{ su.last_name }}</td>
+              <td>{{ su.date_joined|date:"Y-m-d H:i" }}</td>
+              <td>
+                {% if su.is_active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-danger">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                <!-- Toggle -->
+                <a href="{% url 'toggle_superuser_status' su.id %}" 
+                   class="btn btn-sm {% if su.is_active %}btn-danger{% else %}btn-success{% endif %}">
+                  {% if su.is_active %}Deactivate{% else %}Activate{% endif %}
+                </a>
+
+                <!-- Edit -->
+                <a href="{% url 'edit_superuser' su.id %}" class="btn btn-sm btn-warning">
+                  ✏️ Edit
+                </a>
+
+                <!-- Delete -->
+                <a href="{% url 'delete_superuser' su.id %}" class="btn btn-sm btn-outline-danger">
+                  🗑️ Delete
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="text-center text-muted">No superusers found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

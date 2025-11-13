@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}<b>Edit</b>{% else %}New{% endif %} Control Task{% endblock %}
+
+{% block 'content' %}
+<div style="padding: 20px; font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+<h1 style="font-size: 24px; color: #333; margin-bottom: 20px; font-weight: bold;">
+  <strong>{% if object %}✏️ Edit{% else %}➕ New{% endif %} Control Task</strong>
+</h1>
+
+
+  {% if messages %}
+    <ul style="background-color: #eef; border: 1px solid #99c; padding: 10px; list-style-type: square; margin-bottom: 20px;">
+      {% for m in messages %}
+        <li>{{ m }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {% for e in form.area.errors %}
+  <small style="color: red;">{{ e }}</small>
+{% endfor %}
+
+
+  {% if form.non_field_errors %}
+    <ul style="color: red; margin-bottom: 20px;">
+      {% for e in form.non_field_errors %}
+        <li>{{ e }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <form method="post" style="background: #f9f9f9; padding: 20px; border: 1px solid #ccc; border-radius: 6px;">
+    {% csrf_token %}
+
+   <div style="margin-bottom: 15px;">
+  <label>
+    {{ form.area.label }} <span style="color: red;">*</span>
+  </label><br>
+  {{ form.area }}<br>
+  {% for e in form.area.errors %}
+    <small style="color: red;">{{ e }}</small>
+  {% endfor %}
+</div>
+
+    <div style="margin-bottom: 15px;">
+      <label>
+        {{ form.title.label }}
+        {% if form.title.field.required %}<span style="color: red;">*</span>{% endif %}
+      </label><br>
+      {{ form.title }}<br>
+      {% for e in form.title.errors %}
+        <small style="color: red;">{{ e }}</small>
+      {% endfor %}
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label>
+        {{ form.description.label }}
+        {% if form.description.field.required %}<span style="color: red;">*</span>{% endif %}
+      </label><br>
+      {{ form.description }}<br>
+      {% for e in form.description.errors %}
+        <small style="color: red;">{{ e }}</small>
+      {% endfor %}
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label>
+        {{ form.cadence.label }}
+        {% if form.cadence.field.required %}<span style="color: red;">*</span>{% endif %}
+      </label><br>
+      {{ form.cadence }}<br>
+      {% for e in form.cadence.errors %}
+        <small style="color: red;">{{ e }}</small>
+      {% endfor %}
+    </div>
+
+   <div style="margin-bottom: 15px;">
+  <label>
+    {{ form.owner.label }} <span style="color: red;">*</span>
+  </label><br>
+  {{ form.owner }}<br>
+  {% for e in form.owner.errors %}
+    <small style="color: red;">{{ e }}</small>
+  {% endfor %}
+</div>
+    <div style="margin-bottom: 15px;">
+      {{ form.active.label_tag }} {{ form.active }}<br>
+      {% for e in form.active.errors %}
+        <small style="color: red;">{{ e }}</small>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button type="submit" style="background-color: #007BFF; color: white; border: none; padding: 10px 15px; border-radius: 4px;">💾 Save</button>
+      <a href="{% url 'task_list' %}" style="margin-left: 10px; color: #555; text-decoration: none;">Cancel</a>
+    </div>
+
+  </form>
+
+  {% comment %} <p style="margin-top: 20px; font-size: 13px; color: #666;"><span style="color: red;">*</span> Required fields</p> {% endcomment %}
+</div>
+{% endblock %}

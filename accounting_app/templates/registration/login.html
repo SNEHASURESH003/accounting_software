@@ -1,0 +1,130 @@
+{% extends 'base_auth.html' %}
+{% load static %}
+{% block 'content' %}
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(ellipse at bottom, #bcb9e3ff 0%, #3a4269ff 100%);
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Sparkle effect background */
+  .stars {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    box-shadow: 
+      50px 100px white,
+      150px 200px #ffd700,
+      250px 300px #fff,
+      350px 400px #87ceeb,
+      450px 150px #f0f8ff,
+      550px 250px #ff69b4,
+      650px 350px #fffacd,
+      750px 120px #00ffff;
+    animation: twinkle 3s infinite ease-in-out alternate;
+  }
+
+  @keyframes twinkle {
+    from { opacity: 0.2; }
+    to { opacity: 1; }
+  }
+
+  /* Login card */
+  .login-card {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    padding: 2.5rem 3rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    text-align: center;
+  }
+
+  .login-card h3 {
+    margin-bottom: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  form p {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    text-align: left;
+  }
+
+  input, select, textarea {
+    border-radius: 6px;
+    padding: .65rem;
+    font-size: 1rem;
+    width: 100%;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+  }
+
+  input::placeholder {
+    color: #ddd;
+  }
+
+  .btn-primary {
+    margin-top: 1rem;
+    width: 100%;
+    padding: .75rem 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    background: linear-gradient(to right, #ff416c, #ff4b2b);
+    border: none;
+    color: #fff;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    transform: scale(1.05);
+  }
+
+  .forgot-password {
+    margin-top: 1rem;
+    font-size: .95rem;
+  }
+
+  .forgot-password a {
+    color: #010405ff;
+    text-decoration: none;
+  }
+
+  .forgot-password a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<div class="stars"></div>
+
+<div class="login-card">
+  <h3>LOGIN</h3>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ wizard.management_form }}
+    {{ form.as_p }}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+  
+  <div class="forgot-password">
+    <a href="{% url 'forgot_password' %}">Forgot password?</a>
+  </div>
+</div>
+{% endblock %}
+

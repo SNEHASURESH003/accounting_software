@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block 'content' %}
+<div class="container py-4">
+  <h4>Messages</h4>
+  <div class="list-group">
+    {% for m in messages_all %}
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between">
+          <strong>{{ m.title }}</strong>
+          <small class="text-muted">{{ m.created_at|date:"M d, H:i" }}</small>
+        </div>
+        <div class="mt-1">{{ m.text|linebreaksbr }}</div>
+      </div>
+    {% empty %}
+      <div class="text-muted">No messages yet.</div>
+    {% endfor %}
+  </div>
+
+</div>
+  {% if messages %}
+  <div class="mt-2">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} mb-2" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

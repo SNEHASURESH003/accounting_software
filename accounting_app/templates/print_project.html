@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<style>
+  /* ===== Screen (match invoice look) ===== */
+  body{
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color:#111;
+  }
+
+  .report-wrapper{
+    max-width: 850px;
+    margin: 30px auto;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    padding: 40px 50px;
+    border: 1px solid #d0d8e0;
+    box-shadow: 0 4px 15px rgba(0,0,0,.05);
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .report-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid #cfd6de;
+    padding-bottom:15px;
+    margin-bottom:20px;
+  }
+  .brand-block{ display:flex; align-items:center; gap:10px; }
+  .brand-block img{ max-height:80px; height:auto; width:auto; }
+  .brand-name{ font-size:24px; font-weight:700; color:#1976d2; }
+  .report-title{ font-size:32px; font-weight:700; color:#1976d2; margin:0; text-transform:uppercase; text-align:right; }
+
+  .meta{ color:#333; font-size:14px; }
+  .meta p{ margin:3px 0; }
+
+  /* ===== Tables (continuous gradient header + zebra rows) ===== */
+  table.print-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:16px;
+    font-size:14px;
+  }
+  /* continuous bar across thead */
+  table.print-table thead tr{
+    background: linear-gradient(90deg,
+      #6a1b9a 0%,
+      #3949ab 28%,
+      #1976d2 55%,
+      #0288d1 78%,
+      #26c6da 100%
+    );
+  }
+  table.print-table thead th{
+    background:transparent;
+    color:#fff;
+    padding:12px;
+    text-align:center;
+    border:none;
+  }
+  table.print-table thead th:first-child{ border-top-left-radius:6px; }
+  table.print-table thead th:last-child { border-top-right-radius:6px; }
+
+  table.print-table td{
+    padding:12px;
+    text-align:center;
+    border:none;
+  }
+  table.print-table td:first-child{ text-align:left; }
+
+  /* zebra like invoice */
+  table.print-table tbody tr:nth-child(odd){ background:#e0e0e0; }
+  table.print-table tbody tr:nth-child(even){ background:#d6d6d6; }
+
+  /* ===== Totals box (like invoice) ===== */
+  .totals{
+    margin-top:18px;
+    background:#e0e0e0;
+    padding:15px;
+    border-radius:6px;
+    font-size:14px;
+    text-align:right;
+  }
+  .totals .total{
+    font-size:18px;
+    font-weight:700;
+    color:#d62828;
+  }
+
+  .section-title{
+    margin-top:22px;
+    margin-bottom:8px;
+    font-weight:700;
+    color:#1976d2;
+  }
+
+  /* ===== Screen-only actions ===== */
+  .no-print{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:flex-start;
+    margin: 20px auto;
+    max-width: 850px;
+  }
+  .btn{
+    padding:10px 20px;
+    border:none;
+    border-radius:6px;
+    color:#fff;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-block;
+    font-size:14px;
+  }
+  .btn-print{ background:#1976d2; }
+  .btn-back{ background:#6c757d; }
+
+  /* ===== Print rules (preserve gradients/colors, margins) ===== */
+  @media print{
+    header, .navbar, .no-print, button{ display:none !important; }
+    *{
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    @page{ size: A4; margin: 18mm 14mm 22mm; }
+
+    body{ background:#fff !important; margin:0; }
+    .report-wrapper{
+      margin:0 auto;
+      background:#fff !important;
+      border:none !important;
+      box-shadow:none !important;
+      page-break-inside:avoid;
+      padding-bottom:0;
+    }
+
+    table.print-table thead tr{
+      background: linear-gradient(90deg,
+        #6a1b9a 0%,
+        #3949ab 28%,
+        #1976d2 55%,
+        #0288d1 78%,
+        #26c6da 100%
+      ) !important;
+    }
+    table.print-table thead th{
+      background:transparent !important;
+      color:#fff !important;
+    }
+    /* remove hairline borders, keep zebra */
+    table.print-table, table.print-table th, table.print-table td{ border:none !important; }
+    table.print-table tbody tr:nth-child(odd){ background:#e0e0e0 !important; }
+    table.print-table tbody tr:nth-child(even){ background:#d6d6d6 !important; }
+  }
+</style>
+
+<!-- Actions -->
+<div class="no-print">
+  <a href="{% url 'project_costing_report' %}" class="btn btn-back">← Back</a>
+  <button onclick="window.print()" class="btn btn-print">🖨️ Print Report</button>
+</div>
+
+<div class="report-wrapper">
+
+  <!-- Header -->
+  <div class="report-header">
+    <div class="brand-block">
+     {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo" height="80" />
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div><div class="sb-company">Inventura Tech</div></div>
+      {% endif %}
+    </div>
+    <h1 class="report-title">Project Summary</h1>
+  </div>
+
+  <!-- Summary (project row) -->
+  <table class="print-table">
+    <thead>
+      <tr>
+        <th>📁 Project</th>
+        <th>👤 Client</th>
+        <th>💰 Budget (₹)</th>
+        <th>📈 Income (Paid) (₹)</th>
+        <th>📉 Expense (₹)</th>
+        <th>📊 Profit (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ project }}</td>
+        <td>{{ client.name }}</td>
+        <td>₹{{ budget|floatformat:2 }}</td>
+        <td>₹{{ income|floatformat:2 }}</td>
+        <td>₹{{ expense|floatformat:2 }}</td>
+        <td>
+          ₹{{ net_profit|floatformat:2 }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <p><strong>Budget Variance:</strong> ₹{{ budget_variance|floatformat:2 }}</p>
+    <p class="total">NET PROFIT/LOSS: ₹{{ net_profit|floatformat:2 }}</p>
+  </div>
+
+  <!-- Stage-wise expense breakdown -->
+  <h5 class="section-title">Stage-wise Expenses</h5>
+  <table class="print-table">
+    <thead>
+      <tr>
+        <th>📌 Stage</th>
+        <th>📉 Expense (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if stage_expenses %}
+        {% for se in stage_expenses %}
+          <tr>
+            <td>{{ se.stage__name|default:"Unassigned" }}</td>
+            <td>₹{{ se.total|default:0|floatformat:2 }}</td>
+          </tr>
+        {% endfor %}
+        <tr>
+          <td style="font-weight:700;">Total Expense</td>
+          <td style="font-weight:700;">₹{{ expense|floatformat:2 }}</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="2" style="text-align:right;">No stage expenses recorded.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+</div>
+
+{% endblock %}
+

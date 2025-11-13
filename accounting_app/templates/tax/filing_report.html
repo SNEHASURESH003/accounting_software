@@ -1,0 +1,123 @@
+
+{% extends 'base.html' %}
+{% block 'content' %}
+
+<div class="container py-5">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark">
+      <i class="bi bi-file-earmark-bar-graph-fill me-2"></i> Tax Filing Report
+    </h2>
+  </div>
+
+  <!-- Filter Form -->
+  <form method="get" class="row gy-3 gx-4 align-items-end mb-4 bg-light p-3 rounded shadow-sm">
+    <div class="col-md-4">
+      <label for="year" class="form-label">Year</label>
+      <input type="number" name="year" id="year" value="{{ year }}" class="form-control" placeholder="e.g. 2025">
+    </div>
+    <div class="col-md-4">
+      <label for="month" class="form-label">Month</label>
+      <select name="month" id="month" class="form-select">
+        <option value="">All</option>
+        {% for m, name in month_list %}
+          <option value="{{ m }}" {% if month and month|add:'0' == m|add:'0' %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4 d-grid">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-funnel-fill me-1"></i> Filter Results
+      </button>
+    </div>
+  </form>
+
+  <!-- Summary Card -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3 text-primary fw-semibold">📌 Summary</h5>
+      <div class="row">
+        <div class="col-md-4"><strong>Total Records:</strong> {{ summary.total_records }}</div>
+        <div class="col-md-4"><strong>Total Tax Amount:</strong> ₹{{ summary.total_tax_amount }}</div>
+        <div class="col-md-4">
+          <strong>Filed:</strong> {{ summary.filed }} &nbsp;&nbsp;
+          <strong>Unfiled:</strong> {{ summary.unfiled }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary by Tax Type -->
+  <div class="mb-4">
+    <h5 class="mb-3 fw-semibold text-secondary">📂 Tax Type Summary</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle small">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">Tax Type</th>
+            <th scope="col">Taxable Amount</th>
+            <th scope="col">Tax Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in totals %}
+            <tr>
+              <td>{{ item.tax_type }}</td>
+              <td>₹{{ item.total_base }}</td>
+              <td>₹{{ item.total_tax }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3" class="text-center text-muted">No data available.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Detailed Records -->
+  <div>
+    <h5 class="mb-3 fw-semibold text-secondary">📑 Detailed Tax Records</h5>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover table-bordered align-middle small">
+        <thead class="table-light">
+          <tr>
+            <th scope="col">Invoice</th>
+            <th scope="col">Date</th>
+            <th scope="col">Type</th>
+            <th scope="col">Taxable Amount</th>
+            <th scope="col">Rate (%)</th>
+            <th scope="col">Tax</th>
+            <th scope="col">Filed</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td>{{ r.invoice_number }}</td>
+            <td>{{ r.date }}</td>
+            <td>{{ r.tax_type }}</td>
+            <td>₹{{ r.taxable_amount }}</td>
+            <td>{{ r.tax_rate }}</td>
+            <td>₹{{ r.tax_amount }}</td>
+            <td>
+              {% if r.filed %}
+                <span class="badge bg-success">✅ Filed</span>
+              {% else %}
+                <span class="badge bg-danger">❌ Unfiled</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted">No records found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
