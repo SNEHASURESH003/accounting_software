@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+<style>
+  .page-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 24px 0;
+    color: #1f2937;
+    text-align: center;
+  }
+  .new-vendor {
+    display: inline-block;
+    margin-bottom: 24px;
+    background-color: #10b981;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s ease-in-out;
+  }
+  .new-vendor:hover { background-color: #059669; }
+  .message-list {
+    margin-bottom: 20px;
+    padding: 12px;
+    background-color: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 5px;
+    color: #78350f;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+  thead { background-color: #f3f4f6; }
+  th, td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+  }
+  tr:nth-child(even) { background-color: #f9fafb; }
+  tr:hover { background-color: #eef2ff; }
+  th { font-weight: bold; color: #111827; }
+  td { color: #374151; vertical-align: top; }
+  .btn-pay, .btn-razorpay {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    margin: 2px 0;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .btn-pay:hover, .btn-razorpay:hover { background-color: #1d4ed8; }
+  .edit-link { color: #4b5563; text-decoration: underline; margin-right: 8px; }
+  .delete-link { color: #ef4444; text-decoration: underline; }
+  hr { margin: 6px 0; border: none; border-top: 1px dashed #ccc; }
+  em { color: #6b7280; }
+</style>
+
+<h1 class="page-title">📋 Vendors</h1>
+{% comment %} 
+{% if messages %}
+  <ul class="message-list">
+    {% for m in messages %}
+      <li>{{ m }}</li>
+    {% endfor %}
+  </ul>
+{% endif %} {% endcomment %}
+
+<p>
+  {% if request.user.is_superuser or request.user.role|lower == "accountant" %}
+    <a href="{% url 'vendor_create' %}" class="new-vendor">➕ New Vendor</a>
+  {% endif %}
+</p>
+
+{% if objects %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>GSTIN</th>
+        <th>Currency</th>
+        <th>Active</th>
+        <th>Payments</th>
+        {% if request.user.role == "Accountant" %}
+          <th>Actions</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+    {% for v in objects %}
+      <tr>
+        <td>{{ v.name }}</td>
+        <td>{{ v.email|default:"—" }}</td>
+        <td>{{ v.gstin|default:"—" }}</td>
+        <td>{{ v.currency|default:"—" }}</td>
+        <td>{% if v.is_active %}Yes{% else %}No{% endif %}</td>
+
+        <td>
+          {% for payment in v.vendorpayment_set.all %}
+            <div>
+              <strong>₹{{ payment.amount }} on {{ payment.date }}</strong><br>
+              {% if payment.is_paid %}
+                ✅ Paid
+              {% else %}
+                {% if request.user.role|lower == "accountant" %}
+                  <form action="{% url 'vendor_payment_manual' pk=payment.pk %}" method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-pay">Mark as Paid</button>
+                  </form>
+                  <form action="{% url 'vendor_razorpay_pay' pk=payment.pk %}" method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-razorpay">Pay with Razorpay</button>
+                  </form>
+                {% else %}
+                  <span class="text-muted">Pending</span>
+                {% endif %}
+              {% endif %}
+            </div>
+            <hr>
+          {% empty %}
+            <em>No payments</em>
+          {% endfor %}
+        </td>
+
+        {% if request.user.role|lower == "accountant" %}
+          <td>
+            <a href="{% url 'vendor_update' pk=v.pk %}" class="edit-link">Edit</a>
+            <a href="{% url 'vendor_delete' pk=v.pk %}" class="delete-link">Delete</a>
+          </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No vendors yet.{% if request.user.is_superuser or request.user.role|lower == "accountant" %} <a href="{% url 'vendor_create' %}">Create one</a>.{% endif %}</p>
+{% endif %}
+{% endblock %}

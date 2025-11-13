@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block 'content' %}
+  {% if messages %}
+    <ul style="background-color: #eef; border: 1px solid #99c; padding: 10px; list-style: square;">
+      {% for m in messages %}
+        <li>{{ m }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+<div class="container mt-4">
+  <h2 class="mb-3">📜 Audit Log</h2>
+
+  <!-- Filters -->
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-md-2">
+      <label class="form-label">Model</label>
+      <select name="model" class="form-select">
+        <option value="">All</option>
+        {% for m in model_names %}
+          <option value="{{ m }}" {% if selected.model == m %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Action</label>
+      <select name="action" class="form-select">
+        <option value="">All</option>
+        {% for a in actions %}
+          <option value="{{ a }}" {% if selected.action == a %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">User</label>
+      <select name="user" class="form-select">
+        <option value="">All</option>
+        {% for u in users %}
+          <option value="{{ u.id }}" {% if selected.user|default:''|stringformat:"s" == u.id|stringformat:"s" %}selected{% endif %}>
+            {{ u.get_full_name|default:u.email|default:u.username }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">From</label>
+      <input type="date" name="from" class="form-control" value="{{ selected.from }}">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">To</label>
+      <input type="date" name="to" class="form-control" value="{{ selected.to }}">
+    </div>
+    <div class="col-md-6 mt-2">
+      <input type="text" name="q" class="form-control" placeholder="Search message / object id / model"
+             value="{{ selected.q }}">
+    </div>
+    <div class="col-md-3 mt-2 d-grid">
+      <button class="btn btn-primary">Apply Filters</button>
+    </div>
+    <div class="col-md-3 mt-2 d-grid">
+      <a class="btn btn-outline-secondary" href="{% url 'audit_log_list' %}">Reset</a>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>User</th>
+          <th>Action</th>
+          <th>Model</th>
+          <th>ID</th>
+          <th>Change</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in page_obj %}
+        <tr>
+          <td>{{ log.user|default:"—" }}</td>
+          <td class="text-uppercase fw-semibold">{{ log.action }}</td>
+          <td>
+            <a href="{% url 'audit_log_object' log.model_name log.object_id %}">
+              {{ log.model_name }}
+            </a>
+          </td>
+          <td>{{ log.object_id }}</td>
+          <td style="max-width:420px;">
+            <code>{{ log.change_message|truncatechars:140 }}</code>
+            <details class="mt-1">
+              <summary>view full</summary>
+              <pre class="mb-0" style="white-space:pre-wrap">{{ log.change_message }}</pre>
+            </details>
+          </td>
+          <td>{{ log.timestamp|date:"d M Y H:i:s" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">No audit logs available.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav aria-label="Audit pagination">
+    <ul class="pagination">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected.model %}&model={{ selected.model }}{% endif %}{% if selected.action %}&action={{ selected.action }}{% endif %}{% if selected.user %}&user={{ selected.user }}{% endif %}{% if selected.from %}&from={{ selected.from }}{% endif %}{% if selected.to %}&to={{ selected.to }}{% endif %}{% if selected.q %}&q={{ selected.q }}{% endif %}">Prev</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Prev</span></li>
+      {% endif %}
+
+      <li class="page-item disabled">
+        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      </li>
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected.model %}&model={{ selected.model }}{% endif %}{% if selected.action %}&action={{ selected.action }}{% endif %}{% if selected.user %}&user={{ selected.user }}{% endif %}{% if selected.from %}&from={{ selected.from }}{% endif %}{% if selected.to %}&to={{ selected.to }}{% endif %}{% if selected.q %}&q={{ selected.q }}{% endif %}">Next</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Next</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}
+

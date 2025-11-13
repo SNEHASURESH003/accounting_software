@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Spend by Account{% endblock %}
+{% block 'content' %}
+<h1 class="h3 mb-4">Spend by Account</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Account</th>
+            <th class="text-end">Total Spent</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in lines %}
+        <tr>
+            <td>{{ line.account__name }}</td>
+            <td class="text-end">{{ line.total_spent|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2">No data available.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

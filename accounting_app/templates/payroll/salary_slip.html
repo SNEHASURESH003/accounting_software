@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+
+<!-- Google Fonts: Poppins -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --brand-1:#1f57ff;         /* primary accent */
+    --brand-2:#7c3aed;         /* secondary accent */
+    --ink:#0f172a;             /* text */
+    --muted:#64748b;           /* muted text */
+    --line:#e5e7eb;            /* separators */
+    --card:#ffffff;            /* card bg */
+    --soft:#f8fafc;            /* soft bg */
+    --success:#16a34a;         /* status */
+    --danger:#dc2626;          /* status */
+  }
+
+  body { font-family: 'Poppins', sans-serif; background: var(--soft); color: var(--ink); }
+
+  /* Layout */
+  .slip-wrap { max-width: 960px; margin-inline: auto; }
+  .slip-card {
+    background: var(--card);
+    border-radius: 20px;
+    box-shadow: 0 20px 48px rgba(2,8,23,.08);
+    overflow: hidden;
+    border: 1px solid rgba(2,8,23,.06);
+  }
+
+  /* Header */
+  .slip-header {
+    position: relative;
+    padding: 28px 28px 22px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  }
+  .slip-header::after{
+    content:"";
+    position:absolute; inset:0;
+    background: radial-gradient(1200px 220px at -10% 0%, rgba(255,255,255,.25), transparent 60%),
+                radial-gradient(1000px 200px at 110% 20%, rgba(255,255,255,.15), transparent 60%);
+    pointer-events:none;
+  }
+  .slip-title { font-size: 28px; font-weight:700; letter-spacing:.2px; margin:0; }
+  .slip-sub   { margin:4px 0 0; opacity:.95; font-weight:500; }
+
+  /* Top controls */
+  .slip-controls { display:flex; justify-content:flex-end; gap:.5rem; margin-bottom:.75rem; }
+  .btn-print-all{
+    font-weight:600; font-size:14px; padding:.55rem 1rem; border-radius:10px;
+    border:none; color:#fff; background: linear-gradient(90deg, var(--brand-1), var(--brand-2));
+    box-shadow: 0 8px 18px rgba(31,87,255,.25);
+  }
+  .btn-print-all:hover{ filter: brightness(.95); }
+
+  /* Body */
+  .slip-body { padding: 28px; }
+  .info-grid{
+    display:grid; grid-template-columns: 1fr 1fr; gap: 18px 32px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 768px){ .info-grid{ grid-template-columns: 1fr; } }
+
+  .kv { display:flex; gap:8px; align-items:center; }
+  .kv-label{ color: var(--muted); min-width: 130px; }
+  .kv-value{ font-weight:600; }
+
+  .status-badge{
+    font-size: 12px; font-weight:700; padding:.35rem .6rem; border-radius:999px;
+  }
+  .status-paid{ background: rgba(22,163,74,.12); color:#0f5132; border:1px solid rgba(22,163,74,.25); }
+  .status-unpaid{ background: rgba(220,38,38,.10); color:#7f1d1d; border:1px solid rgba(220,38,38,.25); }
+
+  .divider{ height:1px; background: var(--line); margin: 14px 0 22px; }
+
+  /* Section headings */
+  .section-title{
+    display:flex; align-items:center; gap:.6rem;
+    font-weight:700; margin: 0 0 10px; letter-spacing:.25px;
+  }
+  .section-title .dot{
+    width:10px; height:10px; border-radius:999px; background: var(--brand-1);
+    box-shadow: 0 0 0 4px rgba(31,87,255,.12);
+  }
+  .section-title.danger .dot{
+    background:#f97316; box-shadow: 0 0 0 4px rgba(249,115,22,.18);
+  }
+
+  /* Tables (minimal, modern) */
+  .table-clean{ width:100%; border-collapse: collapse; }
+  .table-clean td{ padding:10px 0; border-bottom:1px dashed var(--line); }
+  .table-clean tr:last-child td{ border-bottom:none; }
+  .table-clean td:first-child{ color: var(--ink); }
+  .text-end{ text-align:right; font-variant-numeric: tabular-nums; }
+
+  /* Net salary pill/card */
+  .net-card{
+    margin-top: 18px;
+    display:flex; justify-content:flex-end;
+  }
+  .net-box{
+    background: linear-gradient(135deg, rgba(31,87,255,.1), rgba(124,58,237,.10));
+    border: 1px solid rgba(2,8,23,.08);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display:inline-flex; gap: 12px; align-items: baseline;
+    box-shadow: 0 10px 22px rgba(2,8,23,.08) inset;
+  }
+  .net-label{ font-weight:700; color: var(--ink); }
+  .net-amount{ font-size: 22px; font-weight:800; color:#0b5cff; }
+
+  /* Print styles */
+  @media print {
+    @page { size: A4; margin: 12mm; }
+    body { background: #fff !important; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    header, .site-header, .navbar, .topbar, .app-header, .main-header { display:none !important; }
+    .btn-print-all, .form-actions { display:none !important; }
+
+    .container, .container-fluid, .my-5, .px-5, .py-4 { padding:0 !important; margin:0 !important; }
+    .slip-card{ box-shadow:none !important; border:1px solid #ddd; page-break-inside:avoid; margin-bottom:10mm; }
+
+    /* Ensure header gradient prints nicely */
+    .slip-header{
+      background: linear-gradient(135deg, var(--brand-1), var(--brand-2)) !important;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+  }
+</style>
+
+<div class="container my-5 slip-wrap">
+  <!-- Print All (hidden on print) -->
+  <div class="slip-controls">
+    <button type="button" class="btn-print-all" onclick="window.print()">🖨️ Print</button>
+  </div>
+
+  <div class="slip-card">
+    <!-- Header -->
+    <div class="slip-header text-center">
+      <h2 class="slip-title">💼 Salary Slip</h2>
+      <p class="slip-sub">{{ payroll.month|date:"F Y" }}</p>
+    </div>
+
+    <!-- Body -->
+    <div class="slip-body">
+      <!-- Employee Details (modern key/value grid) -->
+      <div class="info-grid">
+        <div class="kv"><div class="kv-label">👤 Name</div><div class="kv-value">{{ payroll.name }}</div></div>
+        <div class="kv"><div class="kv-label">🗓️ Period</div><div class="kv-value">{{ payroll.month|date:"F Y" }}</div></div>
+
+        <div class="kv"><div class="kv-label">🆔 Employee ID</div><div class="kv-value">{{ payroll.name.id }}</div></div>
+        <div class="kv">
+          <div class="kv-label">Status</div>
+          <div class="kv-value">
+            {% if payroll.is_paid %}
+              <span class="status-badge status-paid">Paid</span>
+            {% else %}
+              <span class="status-badge status-unpaid">Not Paid</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Earnings -->
+      <h5 class="section-title"><span class="dot"></span> 💰 Earnings</h5>
+      <table class="table-clean mb-3">
+        <tbody>
+          <tr><td>Basic Salary</td><td class="text-end">₹{{ payroll.basic_salary }}</td></tr>
+          <tr><td>HRA</td><td class="text-end">₹{{ payroll.hra }}</td></tr>
+          <tr><td>Other Allowances</td><td class="text-end">₹{{ payroll.other_allowances }}</td></tr>
+          {# <tr><td class="fw-bold">Total Earnings</td><td class="text-end fw-bold">₹{{ payroll.total_earnings }}</td></tr> #}
+        </tbody>
+      </table>
+
+      <!-- Deductions -->
+      <h5 class="section-title danger"><span class="dot"></span> 📉 Deductions</h5>
+      <table class="table-clean">
+        <tbody>
+          <tr><td>Provident Fund (PF)</td><td class="text-end">₹{{ payroll.pf }}</td></tr>
+          <tr><td>Employee State Insurance (ESI)</td><td class="text-end">₹{{ payroll.esi }}</td></tr>
+          <tr><td>Tax Deducted at Source (TDS)</td><td class="text-end">₹{{ tds_dynamic }}</td></tr>
+        </tbody>
+      </table>
+
+      <!-- Net Pay -->
+      <div class="net-card">
+        <div class="net-box">
+          <span class="net-label">Net Salary</span>
+          <span class="net-amount">₹{{ net_salary_dynamic }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="form-actions">
+  <a href="{% url 'payroll_list' %}" class="btn btn-secondary">← Back to Payroll</a>
+</div>
+
+{% endblock %}
+

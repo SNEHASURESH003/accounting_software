@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}E-Way Bill{% endblock %}
+
+{% block 'content' %}
+ <div class="form-actions">
+     
+      <a href="{% url 'quote_list' %}" class="btn btn-secondary">← Back to Quotes</a>
+         <a href="{% url 'compliances_dashboard' %}" class="btn btn-secondary">← Back</a>
+ </div>
+
+
+<div class="container my-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="fs-3 fw-semibold mb-4">🚚 E-Way Bills for {{ client.name }}</h2>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Invoice ID</th>
+              <th>E-Way Bill No</th>
+              <th>Valid Until</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for bill in eway_bills %}
+              <tr>
+                <td>{{ bill.invoice.id }}</td>
+                <td>{{ bill.eway_bill_no }}</td>
+                <td>{{ bill.valid_until }}</td>
+                <td>
+                  {% if bill.status == "Active" %}
+                    <span class="badge bg-success">{{ bill.status }}</span>
+                  {% elif bill.status == "Expired" %}
+                    <span class="badge bg-danger">{{ bill.status }}</span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ bill.status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-muted">No e-way bill records found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

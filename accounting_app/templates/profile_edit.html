@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<style>
+  /* Card polish */
+  .card-modern {
+    border: 1px solid #e9eef5;
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(2,6,23,0.08);
+    overflow: hidden;
+  }
+  .card-header-modern {
+    background: linear-gradient(135deg,#2c3e50,#3f5870) !important;
+    border-bottom: 0;
+  }
+  .card-header-modern h5 {
+    font-weight: 600;
+    letter-spacing: .2px;
+  }
+  .card-body {
+    padding: 24px 24px 20px;
+  }
+
+  /* Avatar ring */
+  .avatar-lg {
+    width: 110px; height: 110px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 8px 18px rgba(2,6,23,0.15);
+    outline: 4px solid rgba(255,255,255,.9);
+  }
+
+  /* Form fields */
+  .form-label {
+    font-weight: 600;
+    color: #334155;
+    font-size: .95rem;
+  }
+  .form-control {
+    border: 1px solid #dbe2ea;
+    border-radius: 12px;
+    padding: 10px 12px;
+    transition: box-shadow .15s ease, border-color .15s ease, background-color .15s ease;
+    background-color: #fff;
+  }
+  .form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37,99,235,.15);
+  }
+  input[type="file"].form-control {
+    padding: .5rem .75rem;
+  }
+  .text-danger.small { font-size: .85rem; }
+
+  /* Buttons */
+  .btn { border-radius: 10px; padding: .6rem 1rem; }
+  .btn-success {
+    background: #16a34a; border-color: #16a34a;
+  }
+  .btn-success:hover {
+    background: #15803d; border-color: #15803d;
+  }
+  .btn-secondary {
+    background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0;
+  }
+  .btn-secondary:hover { background: #e2e8f0; }
+
+  /* Optional: tighten grid gap fallback if Bootstrap gap utilities missing */
+  .d-grid.gap-2 > * + * { margin-top: .5rem; }
+</style>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+
+      <div class="card card-modern shadow-lg border-0">
+        <div class="card-header card-header-modern text-white text-center">
+          <h5 class="mb-0">
+            <i class="bi bi-pencil-square me-2"></i> Edit Profile
+          </h5>
+        </div>
+
+        <div class="card-body p-4">
+          <form method="POST" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% if profile.profile_photo %}
+              <div class="text-center mb-3">
+                <img src="{{ profile.profile_photo.url }}"
+                     class="avatar-lg"
+                     alt="Profile Photo">
+              </div>
+            {% endif %}
+
+            {% for field in form %}
+              <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {% render_field field class="form-control" %}
+                {% if field.errors %}
+                  <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+
+            <div class="d-grid gap-2 mt-4">
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-check2-circle me-1"></i> Save Changes
+              </button>
+              <a href="{% url 'profile_view' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

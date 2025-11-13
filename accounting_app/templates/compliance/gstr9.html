@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}GSTR-9 Report{% endblock %}
+
+{% block 'content' %}
+ <div class="form-actions">
+     
+      <a href="{% url 'quote_list' %}" class="btn btn-secondary">← Back to Quotes</a>
+         <a href="{% url 'compliances_dashboard' %}" class="btn btn-secondary">← Back</a>
+ </div>
+
+
+<div class="container my-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="fs-3 fw-semibold mb-4">📊 GSTR-9 Annual Summary for {{ client.name }}</h2>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Year</th>
+              <th>Annual Turnover</th>
+              <th>Total Tax Paid</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in gstr9 %}
+              <tr>
+                <td>{{ record.year }}</td>
+                <td>₹{{ record.annual_turnover }}</td>
+                <td>₹{{ record.total_tax_paid }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted">No GSTR-9 records found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

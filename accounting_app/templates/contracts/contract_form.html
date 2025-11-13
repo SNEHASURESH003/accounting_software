@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">{% if contract %}✏️ Edit Contract: {{ contract.name }}{% else %}➕ New Contract{% endif %}</h2>
+    <a href="{% url 'contract_list' %}" class="btn btn-secondary btn-sm">← Back to Contracts</a>
+  </div>
+
+  <form method="post" class="needs-validation" novalidate>
+    {% csrf_token %}
+
+    <!-- Contract Details -->
+    <div class="card mb-4 shadow-sm p-4">
+      <h4 class="mb-3">Contract Details</h4>
+      {% for field in form %}
+        <div class="mb-3">
+          {{ field.label_tag }}
+          {% if field.field.widget.input_type == "checkbox" %}
+            {{ field|add_class:"form-check-input" }}
+          {% else %}
+            {{ field|add_class:"form-control" }}
+          {% endif %}
+          {% for error in field.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+          {% if field.help_text %}
+            <small class="form-text text-muted">{{ field.help_text }}</small>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Retainers -->
+    <div class="card mb-4 shadow-sm p-4">
+      <h4 class="mb-3">Retainers</h4>
+      {{ retainer_formset.management_form }}
+      {% for f in retainer_formset %}
+        <div class="row g-3 mb-3 p-3 border rounded bg-light">
+          {% for field in f %}
+            <div class="col-md-4">
+              {{ field.label_tag }}
+              {% if field.field.widget.input_type == "checkbox" %}
+                {{ field|add_class:"form-check-input" }}
+              {% else %}
+                {{ field|add_class:"form-control" }}
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Milestones -->
+    <div class="card mb-4 shadow-sm p-4">
+      <h4 class="mb-3">Milestones</h4>
+      {{ milestone_formset.management_form }}
+      {% for f in milestone_formset %}
+        <div class="row g-3 mb-3 p-3 border rounded bg-light">
+          {% for field in f %}
+            <div class="col-md-4">
+              {{ field.label_tag }}
+              {% if field.field.widget.input_type == "checkbox" %}
+                {{ field|add_class:"form-check-input" }}
+              {% else %}
+                {{ field|add_class:"form-control" }}
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Phases -->
+    <div class="card mb-4 shadow-sm p-4">
+      <h4 class="mb-3">Phases</h4>
+      {{ phase_formset.management_form }}
+      {% for f in phase_formset %}
+        <div class="row g-3 mb-3 p-3 border rounded bg-light">
+          {% for field in f %}
+            <div class="col-md-4">
+              {{ field.label_tag }}
+              {% if field.field.widget.input_type == "checkbox" %}
+                {{ field|add_class:"form-check-input" }}
+              {% else %}
+                {{ field|add_class:"form-control" }}
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="d-flex justify-content-end mb-5">
+      <button type="submit" class="btn btn-primary btn-lg">💾 Save All</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

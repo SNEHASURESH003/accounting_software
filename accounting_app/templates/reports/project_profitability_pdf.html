@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      font-size: 12px;
+      padding: 20px;
+      color: #333;
+    }
+
+    h2 {
+      color: #2e6da4;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+
+    th, td {
+      border: 1px solid #000;
+      padding: 6px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    .bold {
+      font-weight: bold;
+      background-color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Project-Wise Profitability Report</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Client</th>
+        <th>Income (INR)</th>
+        <th>Expenses (INR)</th>
+        <th>Profit (INR)</th>
+        <th>Margin (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in report_data %}
+      <tr>
+        <td>{{ row.project }}</td>
+        <td>{{ row.client }}</td>
+        <td>{{ row.income|floatformat:2 }}</td>
+        <td>{{ row.expenses|floatformat:2 }}</td>
+        <td>{{ row.profit|floatformat:2 }}</td>
+        <td>{{ row.margin|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+      <tr class="bold">
+        <td colspan="2">Total</td>
+        <td>{{ total_income|floatformat:2 }}</td>
+        <td>{{ total_expense|floatformat:2 }}</td>
+        <td>{{ total_profit|floatformat:2 }}</td>
+        <td>{{ total_margin|floatformat:2 }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>

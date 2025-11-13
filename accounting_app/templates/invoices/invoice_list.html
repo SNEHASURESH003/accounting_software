@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+
+<div class="container-fluid px-0">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark mb-0">🧾 Invoices</h2>
+    <a href="{% url 'ar_aging_report' %}" class="btn btn-outline-secondary">📊 A/R Aging Report</a>
+
+
+    {% if request.user.is_superuser or request.user.role == "Accountant" %}
+      <a href="{% url 'create_invoice' %}" class="btn btn-success shadow-sm">➕ New Invoice</a>
+    {% endif %}
+  </div>
+  
+
+  {# -------- Summary by Client + Project (total_with_tax) -------- #}
+  {% if group_summaries %}
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-header bg-light fw-semibold">
+      Summary by Client + Project
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered table-striped mb-0">
+          <thead class="table-light">
+            <tr class="text-center">
+              <th>Client</th>
+              <th>Project</th>
+              <th> Invoices</th>
+              <th>Paid</th>
+              <th>Unpaid</th>
+              <th>Total with Tax (₹)</th>
+              <th style="width:180px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for g in group_summaries %}
+            {% with collapse_id="grp-"|add:g.client_id|stringformat:"s"|add:"-"|add:g.project_id|stringformat:"s" %}
+            <tr class="text-center">
+              <td class="text-start">{{ g.client_name }}</td>
+              <td class="text-start">{{ g.project_name|default:"—" }}</td>
+              <td>{{ g.count }}</td>
+              <td>
+                <span class="badge bg-success" title="Paid count">{{ g.paid_count }}</span>
+                <div class="small text-success">₹{{ g.paid_total|floatformat:2 }}</div>
+              </td>
+              <td>
+                <span class="badge bg-danger" title="Unpaid count">{{ g.unpaid_count }}</span>
+                <div class="small text-danger">₹{{ g.unpaid_total|floatformat:2 }}</div>
+              </td>
+              <td class="text-end text-primary fw-semibold">₹{{ g.total_with_tax|floatformat:2 }}</td>
+              {# --- Replace the Actions <td> in the summary row with this --- #}
+<td class="text-center">
+  {# optional: keep your collapse toggle #}
+  {% comment %} <a class="btn btn-sm btn-outline-secondary me-1"
+     data-bs-toggle="collapse"
+     href="#{{ collapse_id }}"
+     role="button"
+     aria-expanded="false"
+     aria-controls="{{ collapse_id }}">
+     ▼ Invoices
+  </a> {% endcomment %}
+
+  {# 🖨️ Print dropdown — one link per invoice in this group #}
+  <div class="btn-group">
+    <button type="button"
+            class="btn btn-sm btn-outline-secondary dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+      🖨️ Print
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      {% if g.count > 1 %}
+  <a class="dropdown-item"
+     href="{% url 'invoice_print_group' g.client_id g.project_id|default:'None' %}">
+    Print Consolidated
+  </a>
+{% endif %}
+      {% if g.invoices %}
+        {% for invoice in g.invoices %}
+          <li>
+            <a class="dropdown-item"
+               href="{% url 'invoice_print' invoice.id %}"
+               target="_blank" rel="noopener">
+              Invoice #{{ invoice.id }}
+              — ₹{{ invoice.total_with_tax|floatformat:2 }}
+              {% if invoice.status == "paid" %}(Paid){% else %}(Unpaid){% endif %}
+            </a>
+          </li>
+        {% endfor %}
+      {% else %}
+        <li><span class="dropdown-item-text text-muted">No invoices</span></li>
+      {% endif %}
+      {# Show consolidated print when a group has > 1 invoice #}
+
+
+    </ul>
+  </div>
+</td>
+
+            </tr>
+
+            {# Collapsible row with per-invoice PRINT buttons (HTML print, not download) #}
+            <tr class="collapse" id="{{ collapse_id }}">
+              <td colspan="7" class="p-0">
+                <div class="p-3">
+                  <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle mb-0">
+                      <thead class="table-light">
+                        <tr class="text-center">
+                          <th>ID</th>
+                          <th>Client</th>
+                          <th>Project</th>
+                          <th>Date</th>
+                          <th>Due</th>
+                          <th>Total (₹)</th>
+                          <th>Version</th>
+                          {% if request.user.role == "Accountant" or request.user.is_superuser %}
+                            <th>Status</th>
+                            <th>Actions</th>
+                          {% endif %}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for invoice in g.invoices %}
+                        <tr class="text-center">
+                          <td>{{ invoice.id }}</td>
+                          <td>{{ invoice.client.name }}</td>
+                          <td>{{ invoice.project.name|default:"—" }}</td>
+                          <td>{{ invoice.date }}</td>
+                          <td>{{ invoice.due_date }}</td>
+                          <td class="text-primary">{{ invoice.total_with_tax|floatformat:2 }}</td>
+                          <td>{{ invoice.version }}</td>
+
+                          {% if request.user.role == "Accountant" or request.user.is_superuser %}
+                            <td>
+                              {% if invoice.status == "paid" %}
+                                <span class="badge bg-success">Paid ✅</span>
+                              {% else %}
+                                <span class="badge bg-danger">Unpaid ❌</span>
+                              {% endif %}
+                            </td>
+                            <td>
+                              <div class="d-flex justify-content-center flex-wrap gap-2">
+                                <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-sm btn-outline-primary" title="View">👁️</a>
+                                <a href="{% url 'update_invoice' invoice.id %}" class="btn btn-sm btn-outline-warning" title="Edit">✏️</a>
+                                <a href="{% url 'delete_invoice' invoice.id %}" class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to delete this invoice?');"
+                                   title="Delete">🗑️</a>
+
+                                {# 🖨️ HTML Print (NOT download) #}
+                                <a href="{% url 'invoice_print' invoice.id %}"
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-secondary"
+                                   title="Print">🖨️</a>
+
+                                {% if request.user.role == "Accountant" %}
+                                  {% if invoice.status != "paid" %}
+                                    <a href="{% url 'mark_paid' invoice.id %}"
+                                       class="btn btn-sm btn-outline-success"
+                                       onclick="return confirm('Mark invoice #{{ invoice.id }} as paid?');"
+                                       title="Mark as Paid">✅
+                                    </a>
+
+                                    <button class="btn btn-sm btn-primary razorpay_btn"
+                                            data-invoice-id="{{ invoice.id }}"
+                                            data-amount="{{ invoice.total_with_tax|floatformat:0 }}">
+                                      Pay ₹{{ invoice.total_with_tax|floatformat:2 }}
+                                    </button>
+                                  {% else %}
+                                    <span class="text-success fw-bold">Paid</span>
+                                  {% endif %}
+                                {% endif %}
+                              </div>
+                            </td>
+                          {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                          <td colspan="{% if request.user.role == 'Accountant' or request.user.is_superuser %}9{% else %}7{% endif %}"
+                              class="text-center text-muted py-4">
+                            No invoices in this group.
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+
+            <tr class="table-secondary fw-bold">
+              <td colspan="5" class="text-end">Grand Total (all groups):</td>
+              <td class="text-end">₹{{ grand_total_with_tax|floatformat:2 }}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# -------- Detailed invoice list (paginated) -------- #}
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle mb-0">
+          <thead class="table-light">
+            <tr class="text-center">
+              <th>ID</th>
+              <th>Client</th>
+              <th>Date</th>
+              <th>Due</th>
+              <th>Total (₹)</th>
+              <th>Version</th>
+              {% if request.user.role == "Accountant" or request.user.is_superuser %}
+                <th>Status</th>
+                <th>Actions</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for invoice in page_obj %}
+            <tr class="text-center">
+              <td>#{{ invoice.id }}</td>
+              <td>{{ invoice.client.name }}</td>
+              <td>{{ invoice.date }}</td>
+              <td>{{ invoice.due_date }}</td>
+              <td class="text-primary">{{ invoice.total_with_tax|floatformat:2 }}</td>
+              <td>{{ invoice.version }}</td>
+
+              {% if request.user.role == "Accountant" or request.user.is_superuser %}
+                <td>
+                  {% if invoice.status == "paid" %}
+                    <span class="badge bg-success">Paid ✅</span>
+                  {% else %}
+                    <span class="badge bg-danger">Unpaid ❌</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="d-flex justify-content-center flex-wrap gap-2">
+                    <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-sm btn-outline-primary" title="View">👁️</a>
+                    <a href="{% url 'update_invoice' invoice.id %}" class="btn btn-sm btn-outline-warning" title="Edit">✏️</a>
+                    <a href="{% url 'delete_invoice' invoice.id %}" class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Are you sure you want to delete this invoice?');"
+                       title="Delete">🗑️</a>
+
+                    {# 🖨️ HTML Print (NOT download) #}
+                
+                    {% if request.user.role == "Accountant" %}
+                      {% if invoice.status != "paid" %}
+                        <a href="{% url 'mark_paid' invoice.id %}"
+                           class="btn btn-sm btn-outline-success"
+                           onclick="return confirm('Mark invoice #{{ invoice.id }} as paid?');"
+                           title="Mark as Paid">✅
+                        </a>
+
+                        <button class="btn btn-sm btn-primary razorpay_btn"
+                                data-invoice-id="{{ invoice.id }}"
+                                data-amount="{{ invoice.total_with_tax|floatformat:0 }}">
+                          Pay ₹{{ invoice.total_with_tax|floatformat:2 }}
+                        </button>
+                      {% else %}
+                        <span class="text-success fw-bold">Paid</span>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                </td>
+              {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="{% if request.user.role == 'Accountant' or request.user.is_superuser %}8{% else %}6{% endif %}" class="text-center text-muted py-4">
+                No invoices available.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination controls -->
+      <nav aria-label="Page navigation" class="mt-3">
+        <ul class="pagination justify-content-center">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">&laquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">&raquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  document.querySelectorAll('.razorpay_btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const invoiceId = this.dataset.invoiceId;
+      const amount = parseInt(this.dataset.amount) * 100; // amount in paise
+
+      fetch(`/razorpay/create_order/${invoiceId}/`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.order_id) {
+            alert('Unable to create Razorpay order');
+            return;
+          }
+
+          var options = {
+            "key": "{{ razorpay_key_id }}",
+            "amount": amount,
+            "currency": "INR",
+            "name": "Your Company Name",
+            "description": `Payment for Invoice #${invoiceId}`,
+            "order_id": data.order_id,
+            "handler": function (response){
+              alert('Payment successful: ' + response.razorpay_payment_id);
+              window.location.reload();
+            },
+            "prefill": {
+              "email": "{{ request.user.email }}",
+              "contact": "{{ request.user.profile.phone|default:'' }}"
+            },
+            "theme": { "color": "#3399cc" }
+          };
+          var rzp1 = new Razorpay(options);
+          rzp1.open();
+        })
+        .catch(err => {
+          alert('Error creating Razorpay order');
+          console.error(err);
+        });
+    });
+  });
+</script>
+
+{% endblock %}
+

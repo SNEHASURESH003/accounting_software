@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Controls Dashboard — {{ month }}/{{ year }}{% endblock %}
+
+{% block 'content' %}
+<div style="padding: 20px; font-family: Arial, sans-serif;">
+
+  <h1 style="font-size: 30px; color: #333;">
+<strong>Controls Dashboard — {{ year }}-{{ month|stringformat:"02d" }}-01</strong>
+
+
+  </h1>
+
+  {% if messages %}
+    <ul style="background-color: #eef; border: 1px solid #99c; padding: 10px; list-style: square;">
+      {% for m in messages %}
+        <li>{{ m }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <p style="margin-top: 10px;">
+    <a href="{% url 'task_list' %}" style="color: #007BFF; "><strong>🔧 Manage Tasks</strong></a>
+  </p>
+
+  {% if instances %}
+    <div style="overflow-x: auto; margin-top: 20px;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background-color: #f0f0f0;">
+            <th style="border: 1px solid #ccc; padding: 8px;">Task</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Area</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Owner</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Period</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Status</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Completed On</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inst in instances %}
+          <tr>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ inst.task.title }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ inst.task.area|default:"—" }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ inst.task.owner|default:"—" }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">
+              {{ inst.period_year }}{% if inst.period_month %}-{{ inst.period_month|stringformat:"02d" }}{% endif %}
+            </td>
+            <td style="border: 1px solid #ccc; padding: 8px;">
+              {% if inst.completed %}
+                <span style="color: green; font-weight: bold;">✔ Completed</span>
+              {% else %}
+                <span style="color: red; font-weight: bold;">✖ Pending</span>
+              {% endif %}
+            </td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ inst.completed_on|default:"—" }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">
+              {% if not inst.completed %}
+              <form method="post" action="{% url 'controls_mark_complete' pk=inst.pk %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit"
+                        style="background-color: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                  Mark Complete
+                </button>
+              </form>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p style="margin-top: 20px;">No instances for this month.</p>
+  {% endif %}
+</div>
+{% endblock %}
+

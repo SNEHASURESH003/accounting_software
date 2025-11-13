@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block 'content' %}
+ <div class="form-actions">
+     
+      <a href="{% url 'quote_list' %}" class="btn btn-secondary">← Back to Quotes</a>
+         <a href="{% url 'revenue_dashboard' %}" class="btn btn-secondary">← Back to Revenues</a>
+ </div>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+  <div class="card shadow-sm" style="width: 500px;">
+    <div class="card-body">
+      <h3 class="fs-5 fw-semibold mb-4 text-center">🧾 Invoice  for {{ invoice.client }}</h3>
+
+      <!-- Invoice Details Table -->
+      <table class="table table-sm table-borderless mb-4">
+        <tbody>
+          <tr>
+            <th scope="row" class="text-muted">Client</th>
+            <td>{{ invoice.client }}</td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-muted">Deal</th>
+            <td>{{ invoice.deal.title }}</td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-muted">Date</th>
+            <td>{{ invoice.date }}</td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-muted">Due Date</th>
+            <td>{{ invoice.due_date }}</td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-muted">Amount</th>
+            <td>₹{{ invoice.total_amount }}</td>
+          </tr>
+          <tr>
+            <th scope="row" class="text-muted">Status</th>
+            <td>
+              {% if invoice.is_paid %}
+                <span class="badge bg-success">✅ Paid</span>
+              {% else %}
+                <span class="badge bg-danger">❌ Unpaid</span>
+              {% endif %}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Payment Actions -->
+      {% if invoice and not invoice.is_paid %}
+        <form method="POST" action="{% url 'mark_invoice_paid' invoice.id %}" class="mb-2">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-warning btn-sm w-100">✅ Mark as Paid</button>
+        </form>
+
+        {% if invoice.razorpay_order_id %}
+          <form action="{% url 'razorpay_invoice_payment_callback' %}" method="POST" class="w-100">
+            {% csrf_token %}
+            <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+            <script
+              src="https://checkout.razorpay.com/v1/checkout.js"
+              data-key="{{ razorpay_key_id }}"
+              data-amount="{{ invoice.total_amount|floatformat:0 }}00"
+              data-currency="INR"
+              data-order_id="{{ invoice.razorpay_order_id }}"
+              data-buttontext="💳 Pay with Razorpay"
+              data-name="Your Company"
+              data-description="Invoice Payment"
+              data-theme.color="#0d6efd">
+            </script>
+          </form>
+        {% else %}
+          <p class="text-warning mt-2">⚠️ Razorpay order not generated.</p>
+        {% endif %}
+      {% endif %}
+
+      <!-- Back Button -->
+      <div class="mt-4 text-center">
+        <a href="{% url 'deal_detail' invoice.deal.id %}" class="btn btn-outline-secondary btn-sm">⬅ Back to Deal</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

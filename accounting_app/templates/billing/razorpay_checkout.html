@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block 'content' %}
+<div class="container mt-5 text-center">
+  <h3>Pay ₹{{ amount }} for {{ invoice.description }}</h3>
+  <button id="rzp-button" class="btn btn-primary mt-3">💳 Pay Now</button>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+    "key": "{{ razorpay_key }}",
+    "amount": "{{ amount|floatformat:2|floatformat:'0' }}00",
+    "currency": "INR",
+    "name": "{{ user.email }}",
+    "description": "{{ invoice.description }}",
+    "order_id": "{{ order_id }}",
+    "handler": function (response) {
+        window.location.href = "/payment-success/?payment_id=" + response.razorpay_payment_id + "&order_id=" + response.razorpay_order_id + "&invoice_id={{ invoice.id }}";
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+var rzp = new Razorpay(options);
+document.getElementById('rzp-button').onclick = function(e){
+    rzp.open();
+    e.preventDefault();
+}
+</script>
+{% endblock %}

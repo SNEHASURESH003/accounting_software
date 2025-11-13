@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Create Employee Profile{% endblock %}
+
+{% block 'content' %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="h4 mb-1 text-center">Create Employee Profile</h1>
+          <p class="text-muted mb-4">User: <strong>{{ user_obj.email }}</strong></p>
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            {% for field in form %}
+              {% if field.field.widget.input_type == "checkbox" %}
+                {# ---- Checkbox (e.g., is_contractor) ---- #}
+                <div class="form-check mb-3">
+                  {{ field|add_class:"form-check-input" }}
+                  <label class="form-check-label" for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+                  {% if field.errors %}
+                    <div class="invalid-feedback d-block">{{ field.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+
+              {% else %}
+                {# ---- Selects & regular inputs ---- #}
+                <div class="mb-3">
+                  <label class="form-label" for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                      <span class="text-danger">*</span>
+                      {% if field.field.choices %}
+                        <span class="ms-1 small text-muted" title="Select required">▼</span>
+                      {% endif %}
+                    {% endif %}
+                  </label>
+
+                  {% if field.errors %}
+                    {% if field.field.choices %}
+                      {{ field|add_class:"form-select is-invalid" }}
+                    {% else %}
+                      {{ field|add_class:"form-control is-invalid" }}
+                    {% endif %}
+                    <div class="invalid-feedback">{{ field.errors|striptags }}</div>
+                  {% else %}
+                    {% if field.field.choices %}
+                      {{ field|add_class:"form-select" }}
+                    {% else %}
+                      {{ field|add_class:"form-control" }}
+                    {% endif %}
+                    {% if field.help_text %}
+                      <div class="form-text">{{ field.help_text }}</div>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+
+            <div class="d-flex gap-2">
+              {# change 'employee_list' to your actual URL name if different #}
+              <a href="{% url 'users_list' %}" class="btn btn-outline-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">Save Employee</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <p class="text-center text-muted small mt-3">
+        Linked user: {{ user_obj.first_name }} {{ user_obj.last_name }} ({{ user_obj.email }})
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

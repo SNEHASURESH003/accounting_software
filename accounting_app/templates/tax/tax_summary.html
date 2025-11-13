@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block 'content' %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --brand-1:#1f57ff; --brand-2:#7c3aed; --ink:#0f172a; --muted:#64748b;
+    --line:#e5e7eb; --card:#ffffff; --soft:#f8fafc;
+  }
+  body{ font-family:'Poppins',sans-serif; background:var(--soft); color:var(--ink); }
+  .page-bar{ gap:.75rem; }
+  .page-title{ font-weight:800; letter-spacing:.2px; }
+  .actions{ display:flex; gap:.5rem; align-items:center; }
+  .btn-print-all{ font-weight:600; font-size:14px; padding:.5rem 1rem; border-radius:10px;
+    border:none; color:#fff; background:linear-gradient(90deg,var(--brand-1),var(--brand-2));
+    box-shadow:0 8px 18px rgba(31,87,255,.25);
+  }
+  .btn-print-all:hover{ filter:brightness(.95); }
+  .tax-card{ background:var(--card); border-radius:20px; box-shadow:0 20px 48px rgba(2,8,23,.08);
+    overflow:hidden; border:1px solid rgba(2,8,23,.06);
+  }
+  .tax-header{ padding:18px 24px; color:#fff; background:linear-gradient(135deg,var(--brand-1),var(--brand-2)); }
+  .tax-header h5{ margin:0; font-weight:700; }
+  .tax-header small{ opacity:.95; }
+  .tax-body{ padding:24px; }
+  .kv-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px 32px; }
+  @media (max-width:768px){ .kv-grid{ grid-template-columns:1fr; } }
+  .kv{ display:flex; gap:8px; }
+  .kv-label{ color:var(--muted); min-width:180px; }
+  .kv-value{ font-weight:600; }
+  .divider{ height:1px; background:var(--line); margin:16px 0 0; }
+  .subhead{ margin:18px 0 8px; color:var(--muted); font-weight:600; letter-spacing:.2px; }
+  table.decl{ width:100%; border-collapse:separate; border-spacing:0; }
+  table.decl th, table.decl td{ padding:10px 12px; border-bottom:1px solid var(--line); }
+  table.decl th{ text-align:left; color:var(--muted); font-weight:600; }
+  table.decl td:last-child, table.decl th:last-child{ text-align:right; }
+  @media print{
+    @page{ size:A4; margin:12mm; }
+    body{ background:#fff !important; }
+    *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    header,.site-header,.navbar,.topbar,.app-header,.main-header{ display:none !important; }
+    .actions,.btn-print-all{ display:none !important; }
+    .container-fluid,.px-0{ padding:0 !important; }
+    .tax-card{ box-shadow:none !important; border:1px solid #ddd; page-break-inside:avoid; }
+    .tax-header{ background:linear-gradient(135deg,var(--brand-1),var(--brand-2)) !important; }
+  }
+</style>
+
+<div class="container-fluid px-0">
+  <div class="d-flex justify-content-between align-items-center mb-3 page-bar">
+    <h2 class="fw-bold text-dark mb-0 page-title">
+      📄 Tax Summary for {{ summary.name.name|default:"—" }}
+    </h2>
+    <div class="actions">
+      <a href="{% url 'employee_list' %}" class="btn btn-outline-secondary">← Back to Employees</a>
+      <button type="button" class="btn-print-all" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+
+  <div class="tax-card">
+    <div class="tax-header">
+      <h5 class="mb-1">Tax Overview</h5>
+      <small>Summary year: {{ summary.year|default:"—" }}</small>
+    </div>
+
+    <div class="tax-body">
+      <div class="kv-grid">
+        <div class="kv">
+          <div class="kv-label">📅 Financial Year</div>
+          <div class="kv-value">{{ summary.year|default:"—" }}</div>
+        </div>
+        <div class="kv">
+          <div class="kv-label">🕒 Generated On</div>
+          <div class="kv-value">
+            {{ summary.generated_on|date:"d M Y, h:i A"|default:"—" }}
+          </div>
+        </div>
+
+        <div class="kv">
+          <div class="kv-label">💰 Total Income</div>
+          <div class="kv-value">₹{{ summary.total_income|floatformat:2|intcomma|default:"0.00" }}</div>
+        </div>
+        <div class="kv">
+          <div class="kv-label">🧾 Taxable Income</div>
+          <div class="kv-value">₹{{ summary.taxable_income|floatformat:2|intcomma|default:"0.00" }}</div>
+        </div>
+
+        <div class="kv">
+          <div class="kv-label">✔️ Approved Deductions</div>
+          <div class="kv-value">₹{{ summary.approved_deductions|floatformat:2|intcomma|default:"0.00" }}</div>
+        </div>
+
+        <div class="kv">
+          <div class="kv-label">💸 Total TDS</div>
+          <div class="kv-value">₹{{ summary.total_tds|floatformat:2|intcomma|default:"0.00" }}</div>
+        </div>
+      </div>
+
+      {# Optional: detailed declarations table if you pass `declarations` in context #}
+      {% if declarations %}
+        <div class="subhead">Declarations</div>
+        <table class="decl">
+          <thead>
+            <tr>
+              <th>Section / Description</th>
+              <th>Declared</th>
+              <th>Approved</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in declarations %}
+              <tr>
+                <td>{{ d.description|default:"—" }}</td>
+                <td>₹{{ d.declared_amount|floatformat:2|intcomma }}</td>
+                <td>₹{{ d.approved_amount|floatformat:2|intcomma }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      <div class="divider"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

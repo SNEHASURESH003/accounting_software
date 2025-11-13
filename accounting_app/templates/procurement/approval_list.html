@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Approvals for {{ object }}{% endblock %}
+
+{% block 'content' %}
+<div class="container my-4">
+  <h2 class="mb-3">Approvals for {{ object }}</h2>
+
+  {% if approvals %}
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Title</th>
+          <th>Requested By</th>
+          <th>Status</th>
+          <th>Requested On</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for approval in approvals %}
+          <tr>
+            <td>{{ approval.title }}</td>
+            <td>{{ approval.requested_by.get_full_name }}</td>
+            <td>{{ approval.status }}</td>
+            <td>{{ approval.created_on|date:"Y-m-d H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-info">
+      No approvals recorded for this object yet.
+    </div>
+  {% endif %}
+
+  <a href="javascript:history.back()" class="btn btn-secondary mt-3">⬅ Back</a>
+</div>
+{% endblock %}

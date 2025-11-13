@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+
+<style>
+  /* --- General Body & Fonts --- */
+  body {
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  /* --- Print Styling --- */
+  @media print {
+      /* ✅ Preserve table gradient headers */
+  .invoice-table th:nth-child(1) { background: linear-gradient(to right, #6a1b9a, #3949ab) !important; }
+  .invoice-table th:nth-child(2) { background: linear-gradient(to right, #3949ab, #1976d2) !important; }
+  .invoice-table th:nth-child(3) { background: linear-gradient(to right, #1976d2, #0288d1) !important; }
+  .invoice-table th:nth-child(4) { background: linear-gradient(to right, #0288d1, #26c6da) !important; }
+
+  /* ✅ Remove table borders in print */
+  .invoice-table, 
+  .invoice-table th, 
+  .invoice-table td {
+    border: none !important;
+  }
+
+  /* ✅ Keep alternating row shading */
+  .invoice-table tbody tr:nth-child(odd) { background: #e0e0e0 !important; }
+  .invoice-table tbody tr:nth-child(even) { background: #d6d6d6 !important; }
+    @page { margin: 0; }
+    body {
+      margin: 0;
+      background: #fff !important;
+    }
+    * {
+    -webkit-print-color-adjust: exact !important;  /* Chrome/Safari */
+    print-color-adjust: exact !important;          /* Firefox & modern browsers */
+    color-adjust: exact !important;                /* Legacy support */
+  }
+
+  {% comment %} footer svg * {
+  fill: #4b74bfff !important;        /* dark bluish fill */
+  stroke: white !important;          /* white stroke */
+} {% endcomment %}
+
+footer .ico {
+ background: linear-gradient(to bottom, #7682b9ff, #97a7b3ff);
+  border-radius: 50%; 
+    display: inline-flex;                     /* centers svg inside */
+  align-items: center;
+  justify-content: center;
+  width: 36px;                              /* size of circle */
+  height: 36px;               /* keep round shape */
+}
+
+ header, .site-header, .navbar, .no-print, button {
+    display: none !important;
+  }
+
+
+footer nav {
+  display: block !important;
+}
+
+    .invoice-wrapper {
+      margin: 0 auto;
+      box-shadow: none;
+      page-break-inside: avoid;
+    }
+   
+    .invoice-table tbody tr {
+      background: #fff !important;
+    }
+    {% comment %} .invoice-table, .invoice-table th, .invoice-table td {
+      border: 1px solid #000 !important;
+    } {% endcomment %}
+  }
+
+  /* --- Invoice Wrapper --- */
+  .invoice-wrapper {
+    max-width: 850px;
+    margin: 30px auto;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    padding: 40px 50px;
+    border: 1px solid #d0d8e0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    position: relative;
+    
+  }
+
+  /* --- Header --- */
+  .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 15px;
+  }
+  .company-logo {
+    display: flex;
+    align-items: center;
+  }
+  .company-logo img.logo-img {
+    max-height: 80px;
+    height: auto;
+    width: auto;
+    margin-right: 10px;
+  }
+  .company-logo .logo-text, .company-logo .sb-company {
+    font-size: 24px;
+    font-weight: bold;
+    color: #1976d2;
+  }
+
+  /* --- Invoice Info --- */
+  .invoice-details p, .billing-info p {
+    margin: 3px 0;
+    font-size: 14px;
+    color: #333;
+  }
+  .invoice-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #1976d2;
+    margin-bottom: 10px;
+    text-align: right;
+    text-transform: uppercase;
+  }
+
+  /* --- Table --- */
+  .invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .invoice-table th {
+    color: #fff;
+    padding: 12px;
+    text-align: center;
+  }
+  .invoice-table th:nth-child(1) { background: linear-gradient(to right, #6a1b9a, #3949ab); }
+  .invoice-table th:nth-child(2) { background: linear-gradient(to right, #3949ab, #1976d2); }
+  .invoice-table th:nth-child(3) { background: linear-gradient(to right, #1976d2, #0288d1); }
+  .invoice-table th:nth-child(4) { background: linear-gradient(to right, #0288d1, #26c6da); }
+  .invoice-table td {
+    padding: 12px;
+    text-align: center;
+    border: none;
+  }
+  .invoice-table td:first-child {
+    text-align: left;
+  }
+  .invoice-table tbody tr:nth-child(odd) { background: #e0e0e0; }
+  .invoice-table tbody tr:nth-child(even) { background: #d6d6d6; }
+
+  /* --- Totals --- */
+  .invoice-totals {
+    text-align: right;
+    margin-top: 15px;
+    font-size: 14px;
+    background: #e0e0e0;
+    padding: 15px;
+    border-radius: 5px;
+  }
+  .invoice-totals .total {
+    font-weight: bold;
+    font-size: 18px;
+    color: #d62828;
+  }
+
+  /* --- Payment Info --- */
+  .payment-info {
+    margin-top: 30px;
+    padding: 20px;
+    border: 2px solid #1976d2;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+  }
+  .payment-info h3 {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #1976d2;
+    text-transform: uppercase;
+  }
+  .payment-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+  }
+  .payment-row strong {
+    color: #1976d2;
+  }
+
+  /* --- Print Button --- */
+  .no-print {
+    text-align: center;
+    margin-top: 20px;
+  }
+  .no-print button {
+    padding: 10px 20px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  /* --- Footer --- */
+  .invoice-footer {
+    text-align: center;
+    font-size: 12px;
+    margin-top: 40px;
+    color: #777;
+
+  }
+  
+</style>
+
+<!-- Print Button -->
+<div class="no-print">
+  <a href="{% url 'invoice_list' %}" 
+     style="padding:10px 20px; 
+            background:#6c757d; 
+            color:#fff; 
+            border:none; 
+            border-radius:6px; 
+            text-decoration:none; 
+            font-size:14px; 
+            margin-right:10px;">
+    ← Back
+  </a>
+  <button onclick="window.print()">Print Invoice</button>
+</div>
+
+<div class="invoice-wrapper">
+
+  <!-- Header -->
+  <div class="invoice-header">
+    <div class="company-logo">
+        {% if branding and branding.logo %}
+        <div >
+          <img src="{{ branding.logo.url }}" alt="Logo" height="80" />
+          <div ><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div >
+          <div class="sb-company">Inventura Tech</div>
+        
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Invoice Info -->
+  <div class="header-section" style="display:flex; justify-content:space-between;">
+    <div class="invoice-details">
+      <p><strong>Invoice :</strong> {{ invoice.id }}</p>
+      <p><strong>Date:</strong> {{ invoice.date }}</p>
+      <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
+    </div>
+    <div class="billing-info">
+      <h1 class="invoice-title">Invoice</h1>
+      <p><strong>Billing To: {{ invoice.client.name }}</strong></p>
+    </div>
+  </div>
+
+  <!-- Invoice Table -->
+  <table class="invoice-table">
+    <thead>
+      <tr>
+        <th>Product / Service</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in invoice.items.all %}
+      <tr>
+        <td>{{ item.description }}</td>
+        <td>₹{{ item.unit_price }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>₹{{ item.total|floatformat:2}}</td>
+      </tr>
+      {% endfor %}
+      {% for entry in invoice.time_entries.all %}
+      <tr>
+        <td>{{ entry.description }} <small>(Time Entry)</small></td>
+        <td>₹{{ entry.rate_per_hour }}</td>
+        <td>{{ entry.hours }} hrs</td>
+        <td>₹{{ entry.total|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Totals -->
+  <div class="invoice-totals">
+    <p><strong>Subtotal:</strong> ₹{{ invoice.total_without_tax |floatformat:2}}</p>
+    <p><strong>GST ({{ invoice.gst_percent }}%):</strong> ₹{{ invoice.gst_amount|floatformat:2 }}</p>
+    <p class="total">TOTAL DUE: ₹{{ invoice.total_with_tax|floatformat:2 }}/-</p>
+  </div>
+
+  <!-- Payment Info -->
+  <div class="payment-info">
+    <h3>Payment Info</h3>
+    <div class="payment-row"><strong>Bank Name:</strong><span>Federal Bank</span></div>
+    <div class="payment-row"><strong>Account Number:</strong><span>40344100900107</span></div>
+    <div class="payment-row"><strong>A/C Name:</strong><span>Alex R</span></div>
+    <div class="payment-row"><strong>IFSC:</strong><span>KLGB0040344</span></div>
+    <div class="payment-row"><strong>UPI ID:</strong><span>auxen008@okicici</span></div>
+  </div>
+
+  <!-- Footer -->
+
+
+</div>
+
+{% endblock %}

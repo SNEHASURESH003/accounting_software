@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<style>
+  body{
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  /* Footer height hint for print */
+  :root{ --footer-height: 180px; }
+
+  /* Full-page print */
+  @media print{
+    header, .site-header, .navbar, .no-print, button, .btn-download, .print-col { display:none !important; }
+    @page { margin: 10mm; }
+    body{ margin:0; background:#fff !important; }
+    *{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    /* ✅ keep footer fixed at bottom on full-page print */
+    footer, .site-footer{
+      position: fixed !important;
+      bottom: 0; left: 0; right: 0;
+      display: block !important; visibility: visible !important;
+    }
+    /* give space so content doesn't overlap fixed footer */
+    .invoice-wrapper{ padding-bottom: var(--footer-height) !important; }
+  }
+
+  .invoice-wrapper{
+    max-width: 900px; margin: 30px auto;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    padding: 36px 44px; border: 1px solid #d0d8e0; border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  }
+  .invoice-header{
+    display:flex; justify-content:space-between; align-items:center;
+    border-bottom: 1px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 18px;
+  }
+
+  h2{ margin: 10px 0 16px; text-align:center; }
+  .invoice-table{ width:100%; border-collapse: collapse; font-size: 14px; }
+  .invoice-table th{
+    background:#f3f4f6; color:#0f0e0e; padding:10px; border:1px solid #e5e7eb; text-align:center;
+  }
+  .invoice-table td{
+    padding:10px; border:1px solid #e5e7eb; text-align:center; background:#fff;
+  }
+  .invoice-table tbody tr:nth-child(odd) td{ background:#fafafa; }
+
+  .actions { display:flex; gap:10px; margin:12px; }
+
+  .btn-print-row{
+    padding:6px 10px; border:none; border-radius:6px; cursor:pointer;
+    background:#1976d2; color:#fff; font-weight:600;
+  }
+  .btn-print-row:hover{ filter:brightness(.95); }
+  .print-col{ white-space:nowrap; }
+</style>
+
+<!-- Actions -->
+<div class="no-print actions">
+  <button onclick="window.print()">🖨️ Print Report</button>
+</div>
+
+<div class="invoice-wrapper">
+  <!-- Header -->
+  <div class="invoice-header">
+    <div class="company-logo">
+      {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo" height="64"/>
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div><strong>Company name</strong></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Title -->
+  <h2>📊 Budget vs Actual Report</h2>
+
+  <!-- Table -->
+  <table class="invoice-table" id="bva-table">
+    <thead>
+      <tr>
+        <th>📝 Project</th>
+        <th>👥 Client</th>
+        <th>📈 Budget (₹)</th>
+        <th>💸 Actual Expense (₹)</th>
+        <th>🔁 Variance (₹)</th>
+        <th class="no-print print-col">🖨️</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in project_data %}
+      <tr id="r-{{ forloop.counter0 }}">
+        <td class="cell-project"><strong>{{ row.project.name }}</strong></td>
+        <td class="cell-client">{{ row.project.client.name }}</td>
+        <td class="cell-budget">₹{{ row.budget|floatformat:2 }}</td>
+        <td class="cell-expense">₹{{ row.expense|floatformat:2}}</td>
+        <td
+          class="cell-variance"
+          data-variance="{{ row.budget_variance|floatformat:2 }}"
+          style="{% if row.budget_variance < 0 %}background-color:#FDECEA;color:#B71C1C;font-weight:700;{% elif row.budget_variance > 0 %}background-color:#E8F5E9;color:#1B5E20;font-weight:700;{% endif %}">
+          ₹{{ row.budget_variance|floatformat:2 }}
+        </td>
+        <td class="no-print print-col">
+          <button type="button" class="btn-print-row" onclick="printSingle('r-{{ forloop.counter0 }}')">Print</button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="text-center">No projects found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+    <tfoot>
+      <tr>
+        <td colspan="2" style="text-align:right; background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000;">
+          Total
+        </td>
+        <td id="total-budget-cell" style="background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000; text-align:right;">
+          {% if total_budget %}₹{{ total_budget|floatformat:2 }}{% else %}₹0.00{% endif %}
+        </td>
+        <td id="total-expense-cell" style="background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000; text-align:right;">
+          {% if total_expense %}₹{{ total_expense|floatformat:2 }}{% else %}₹0.00{% endif %}
+        </td>
+        <td id="total-variance-cell" style="background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000; text-align:right;">
+          {% if total_variance %}₹{{ total_variance|floatformat:2 }}{% else %}₹0.00{% endif %}
+        </td>
+        <td class="no-print" style="background:#E3F2FD; border:1px solid #000;"></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<script>
+ {% if branding.logo %}
+ 
+    const BRAND_LOGO = "{{ branding.logo.url }}";
+
+{% else %}
+
+    const BRAND_LOGO = "logo";  // fallback if no file uploaded
+ 
+{% endif %}
+
+  const BRAND_NAME = "{{ branding.company_name|default:'Company name' }}";
+  const BRAND_TAG  = "{{ branding.tagline|default:'' }}";
+
+  function formatINR(n){
+    return '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function parseMoney(txt){
+    if (txt == null) return 0;
+    const num = String(txt).replace(/[^\d.-]/g,'');
+    const f = parseFloat(num);
+    return isNaN(f) ? 0 : f;
+  }
+
+  function applyVarianceStyle(cell, value){
+    cell.style.backgroundColor = '';
+    cell.style.color = '';
+    cell.style.fontWeight = '';
+    if (value < 0){
+      cell.style.backgroundColor = '#FDECEA';
+      cell.style.color = '#B71C1C';
+      cell.style.fontWeight = '700';
+    } else if (value > 0){
+      cell.style.backgroundColor = '#E8F5E9';
+      cell.style.color = '#1B5E20';
+      cell.style.fontWeight = '700';
+    }
+  }
+
+  /**
+   * Group rows by (Project, Client), sum Budget & Expense,
+   * recompute Variance = BudgetSum - ExpenseSum,
+   * keep the first row of each group and remove the rest.
+   */
+  function groupSameProjectClient(){
+    const tbody = document.querySelector('#bva-table tbody');
+    if (!tbody) return;
+
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const map = new Map(); // key -> { firstRow, budget, expense }
+
+    rows.forEach((tr) => {
+      const project = tr.querySelector('.cell-project')?.textContent.trim() || '';
+      const client  = tr.querySelector('.cell-client')?.textContent.trim() || '';
+      const key = project + '||' + client;
+
+      const budget = parseMoney(tr.querySelector('.cell-budget')?.textContent);
+      const expense = parseMoney(tr.querySelector('.cell-expense')?.textContent);
+
+      if (!map.has(key)){
+        map.set(key, { firstRow: tr, budget: budget, expense: expense, dupes: [] });
+      } else {
+        const entry = map.get(key);
+        entry.budget += budget;
+        entry.expense += expense;
+        entry.dupes.push(tr);
+      }
+    });
+
+    // Update first rows and remove duplicates
+    map.forEach((entry) => {
+      const { firstRow, budget, expense, dupes } = entry;
+      const variance = budget - expense;
+
+      firstRow.querySelector('.cell-budget').textContent = formatINR(budget);
+      firstRow.querySelector('.cell-expense').textContent = formatINR(expense);
+
+      const varCell = firstRow.querySelector('.cell-variance');
+      if (varCell){
+        varCell.textContent = formatINR(variance);
+        varCell.setAttribute('data-variance', variance.toFixed(2));
+        applyVarianceStyle(varCell, variance);
+      }
+
+      // remove duplicate rows from DOM
+      dupes.forEach(tr => tr.remove());
+    });
+
+    // Recompute totals from the remaining rows
+    recomputeTotals();
+  }
+
+  function recomputeTotals(){
+    const tbody = document.querySelector('#bva-table tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    let totalBudget = 0, totalExpense = 0, totalVariance = 0;
+
+    rows.forEach(tr => {
+      totalBudget  += parseMoney(tr.querySelector('.cell-budget')?.textContent);
+      totalExpense += parseMoney(tr.querySelector('.cell-expense')?.textContent);
+      // recompute from budget-expense to avoid rounding drift
+      totalVariance += (parseMoney(tr.querySelector('.cell-budget')?.textContent) - parseMoney(tr.querySelector('.cell-expense')?.textContent));
+    });
+
+    const b = document.getElementById('total-budget-cell');
+    const e = document.getElementById('total-expense-cell');
+    const v = document.getElementById('total-variance-cell');
+    if (b) b.textContent = formatINR(totalBudget);
+    if (e) e.textContent = formatINR(totalExpense);
+    if (v) v.textContent = formatINR(totalVariance);
+  }
+
+  const BRANDING = {
+    logo: BRAND_LOGO,
+    name: BRAND_NAME,
+    tag:  BRAND_TAG
+  };
+  function buildHeaderHTML(){
+    return BRANDING.logo
+      ? `<div><img src="${BRANDING.logo}" alt="Logo" height="64"/><div><strong>${BRANDING.name}</strong></div>${BRANDING.tag ? `<div>${BRANDING.tag}</div>` : ''}</div>`
+      : `<div><strong>${BRANDING.name}</strong></div>`;
+  }
+
+  /* Grab your real footer & wrap it for print positioning */
+  function getFooterHTML(){
+    const el = document.querySelector('.site-footer') || document.querySelector('footer');
+    if (!el) return '';
+    return `<div class="print-footer">${el.outerHTML}</div>`;
+  }
+
+  /* Clone stylesheets & inline styles to iframe so footer looks identical */
+  function cloneHeadResources(fromDoc, toHead){
+    const nodes = fromDoc.querySelectorAll('link[rel="stylesheet"], link[rel="preload"][as="style"], style, link[rel="preconnect"], link[rel="dns-prefetch"]');
+    nodes.forEach(node => toHead.appendChild(node.cloneNode(true)));
+    const rootStyle = fromDoc.documentElement.getAttribute('style');
+    if (rootStyle) {
+      const s = document.createElement('style');
+      s.textContent = `:root{${rootStyle}}`;
+      toHead.appendChild(s);
+    }
+  }
+
+  function waitForStylesheets(iDoc, done){
+    const links = Array.from(iDoc.querySelectorAll('link[rel="stylesheet"]'));
+    if (links.length === 0) { done(); return; }
+    let pending = links.length, doneOnce = false;
+    const check = () => { if (!doneOnce && --pending <= 0) { doneOnce = true; done(); } };
+    links.forEach(l => {
+      l.addEventListener('load', check, { once:true });
+      l.addEventListener('error', check, { once:true });
+    });
+    setTimeout(() => { if (!doneOnce) { doneOnce = true; done(); } }, 700);
+  }
+
+  function printSingle(rowId){
+    const row = document.getElementById(rowId);
+    if(!row) return;
+
+    const proj    = row.querySelector('.cell-project')?.textContent.trim() || '';
+    const client  = row.querySelector('.cell-client')?.textContent.trim() || '';
+    const budgetT = row.querySelector('.cell-budget')?.textContent || '₹0.00';
+    const expenseT= row.querySelector('.cell-expense')?.textContent || '₹0.00';
+
+    const budgetN = parseMoney(budgetT);
+    const expenseN= parseMoney(expenseT);
+    const varianceN = budgetN - expenseN;
+
+    const variancePretty = formatINR(varianceN);
+    let vStyle = '';
+    if (varianceN < 0) vStyle = 'background-color:#FDECEA;color:#B71C1C;font-weight:700;';
+    else if (varianceN > 0) vStyle = 'background-color:#E8F5E9;color:#1B5E20;font-weight:700;';
+
+    const headerBlock = buildHeaderHTML();
+    const footerHTML  = getFooterHTML();
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const iDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iDoc.open();
+    iDoc.write(`<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Budget vs Actual – ${proj}</title>
+  <style>
+    :root{ --footer-height: ${getComputedStyle(document.documentElement).getPropertyValue('--footer-height') || '180px'}; }
+    @page { margin: 12mm; size: A4; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    html, body { height: 100%; }
+    body{ font-family: 'Segoe UI', Arial, sans-serif; margin:0; background:#fff; }
+    .wrap{ max-width:900px; margin: 20px auto; padding: 0 12px var(--footer-height); }
+    .invoice-header{ display:flex; justify-content:space-between; align-items:center;
+      border-bottom: 1px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 14px; }
+    h2{ margin: 10px 0 12px; text-align:center; }
+    table{ width:100%; border-collapse:collapse; font-size:14px; }
+    th{ background:#f3f4f6; color:#0f0e0e; padding:10px; border:1px solid #e5e7eb; text-align:center; }
+    td{ padding:10px; border:1px solid #e5e7eb; text-align:center; background:#fff; }
+
+    .print-footer{ position: fixed; left: 0; right: 0; bottom: 0; }
+    .print-footer footer, .print-footer .site-footer{ display:block !important; visibility: visible !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="invoice-header">
+      <div class="company-logo">${headerBlock}</div>
+    </div>
+
+    <h2>📊 Budget vs Actual – ${proj}</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>📝 Project</th>
+          <th>👥 Client</th>
+          <th>📈 Budget (₹)</th>
+          <th>💸 Actual Expense (₹)</th>
+          <th>🔁 Variance (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>${proj}</strong></td>
+          <td>${client}</td>
+          <td>${formatINR(budgetN)}</td>
+          <td>${formatINR(expenseN)}</td>
+          <td style="${vStyle}">${variancePretty}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    ${footerHTML}
+  </div>
+</body>
+</html>`);
+    iDoc.close();
+
+    cloneHeadResources(document, iDoc.head);
+
+    waitForStylesheets(iDoc, () => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      iframe.contentWindow.onafterprint = () => {
+        document.body.removeChild(iframe);
+      };
+      setTimeout(() => { if (document.body.contains(iframe)) document.body.removeChild(iframe); }, 2000);
+    });
+  }
+
+  // Run grouping once DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    groupSameProjectClient();
+  });
+</script>
+
+{% endblock %}

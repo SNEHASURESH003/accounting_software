@@ -1,0 +1,32 @@
+{% comment %} {% extends "base.html" %}
+{% block 'content' %}
+<h2>Project Costing Report</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Project</th>
+      <th>Client</th>
+      <th>Budget</th>
+      <th>Income</th>
+      <th>Expense</th>
+      <th>Budget Variance</th>
+      <th>Time (hrs)</th>
+      <th>Profit</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in project_data %}
+    <tr>
+      <td>{{ row.project.name }}</td>
+      <td>{{ row.project.client.name }}</td>
+      <td>{{ row.budget }}</td>
+      <td>{{ row.income }}</td>
+      <td>{{ row.expense }}</td>
+      <td>{{ row.budget_variance }}</td>
+      <td>{{ row.time_hours }}</td>
+      <td>{{ row.net_profit }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %} {% endcomment %}

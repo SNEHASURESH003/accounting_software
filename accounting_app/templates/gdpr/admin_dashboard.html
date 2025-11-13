@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+
+<div class="container my-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="fs-3 fw-semibold mb-4 text-center">🔐 GDPR Requests</h2>
+      {% if messages %}
+  <div class="container mb-3">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>User</th>
+              <th>Request Type</th>
+              <th>Status</th>
+              <th>Timestamp</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in requests %}
+              <tr>
+                <td>{{ req.user.email }} - {{ req.user.first_name }} {{ req.user.last_name }}</td>
+                <td>
+                  {% if req.request_type == 'export' %}
+                    <span class="badge bg-info">{{ req.get_request_type_display }}</span>
+                  {% elif req.request_type == 'delete' %}
+                    <span class="badge bg-warning text-dark">{{ req.get_request_type_display }}</span>
+                  {% else %}
+                    {{ req.get_request_type_display }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if req.status == 'completed' %}
+                    <span class="badge bg-success">Completed</span>
+                  {% elif req.status == 'pending' %}
+                    <span class="badge bg-secondary">Pending</span>
+                  {% else %}
+                    <span class="badge bg-dark">{{ req.status }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ req.timestamp }}</td>
+                <td>
+                  {% if req.request_type == 'export' %}
+                    <a href="{% url 'gdpr_export_data' req.user.id %}" class="btn btn-outline-primary btn-sm">Export Data</a>
+                  {% endif %}
+                  {% if req.request_type == 'delete' and req.status != 'completed' %}
+                    <a href="{% url 'gdpr_delete_user' req.user.id %}" class="btn btn-outline-danger btn-sm">Delete User</a>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted">No GDPR requests found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

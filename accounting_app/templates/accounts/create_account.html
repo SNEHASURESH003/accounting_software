@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<!-- Include Poppins Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  h2 {
+    font-weight: 600;
+    font-size: 28px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  label {
+    font-weight: 500;
+  }
+
+  .required-asterisk {
+    color: red;
+    margin-left: 4px;
+  }
+
+  .form-section {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    max-width: 600px;
+    margin: auto;
+  }
+
+  .btn-primary {
+    font-weight: 500;
+    width: 100%;
+  }
+
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .checkbox-group label {
+    margin-right: 0.5rem;
+  }
+
+  @media (max-width: 576px) {
+    .checkbox-group {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+</style>
+
+<div class="container px-3 px-md-5 py-4">
+  <h2>Create New Account</h2>
+
+
+  <form method="post" class="form-section">
+    {% csrf_token %}
+
+    <!-- Account Type -->
+    <div class="form-group mb-3">
+      <label for="{{ form.account_type.id_for_label }}">
+        {{ form.account_type.label }}
+        {% if form.account_type.field.required %}
+          <span class="required-asterisk">*</span>
+        {% endif %}
+      </label>
+      {{ form.account_type|add_class:"form-control" }}
+    </div>
+
+    <!-- Account Name with Suggestions -->
+    <div class="form-group mb-3">
+      <label for="id_name">
+        Account Name:
+        <span class="required-asterisk">*</span>
+      </label>
+      <input type="text" name="name" id="id_name" class="form-control" list="nameSuggestions" required>
+      <datalist id="nameSuggestions"></datalist>
+    </div>
+
+    <!-- Currency -->
+    <div class="form-group mb-3">
+      <label for="{{ form.currency.id_for_label }}">
+        {{ form.currency.label }}
+        {% if form.currency.field.required %}
+          <span class="required-asterisk">*</span>
+        {% endif %}
+      </label>
+      {{ form.currency|add_class:"form-control" }}
+    </div>
+
+    <!-- Checkboxes in same line -->
+    <div class="checkbox-group mb-3">
+      <div>
+        {{ form.is_bank }} {{ form.is_bank.label_tag }}
+      </div>
+      <div>
+        {{ form.is_receivable }} {{ form.is_receivable.label_tag }}
+      </div>
+      <div>
+        {{ form.is_payable }} {{ form.is_payable.label_tag }}
+      </div>
+    </div>
+
+    <!-- Opening Balance -->
+    <div class="form-group mb-3">
+      <label for="{{ form.opening_balance.id_for_label }}">
+        {{ form.opening_balance.label }}
+        {% if form.opening_balance.field.required %}
+          <span class="required-asterisk">*</span>
+        {% endif %}
+      </label>
+      {{ form.opening_balance|add_class:"form-control" }}
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">💾 Save Account</button>
+  </form>
+  {% comment %} {% else %}
+    <div class="alert alert-warning text-center mt-4">
+      <strong>Note:</strong> Superuser can view only. Editing is disabled.
+    </div>
+  {% endif %} {% endcomment %}
+
+  <div class="mt-4 text-center">
+    <a href="{% url 'account_list' %}" class="btn btn-secondary">← Back to Accounts</a>
+  </div>
+</div>
+
+<!-- Suggestion Script -->
+<script>
+  const accountNameChoices = {{ account_name_choices|safe }};
+  const accountTypeSelect = document.getElementById("id_account_type");
+  const nameSuggestions = document.getElementById("nameSuggestions");
+
+  function updateSuggestions() {
+    const selectedType = accountTypeSelect.value;
+    nameSuggestions.innerHTML = '';
+
+    if (selectedType && accountNameChoices[selectedType]) {
+      accountNameChoices[selectedType].forEach(function(name) {
+        const option = document.createElement("option");
+        option.value = name;
+        nameSuggestions.appendChild(option);
+      });
+    }
+  }
+
+  if (accountTypeSelect) {
+    accountTypeSelect.addEventListener("change", updateSuggestions);
+    if (accountTypeSelect.value) {
+      updateSuggestions();
+    }
+  }
+</script>
+
+{% endblock %}

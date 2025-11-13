@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+<div class="container mx-auto p-6">
+  <h2 class="text-2xl font-bold mb-4">🧾 Audit Log</h2>
+
+  <!-- Filters -->
+  <form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-3 bg-white p-4 rounded shadow mb-4">
+    <select name="model" class="border rounded p-2">
+      <option value="">All Models</option>
+      {% for m in model_names %}
+        <option value="{{ m }}" {% if selected.model == m %}selected{% endif %}>{{ m }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="action" class="border rounded p-2">
+      <option value="">All Actions</option>
+      {% for a in actions %}
+        <option value="{{ a }}" {% if selected.action == a %}selected{% endif %}>{{ a }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="user" class="border rounded p-2">
+      <option value="">All Users</option>
+      {% for u in users %}
+        <option value="{{ u.id }}" {% if selected.user == u.id|stringformat:"s" %}selected{% endif %}>
+          {{ u.email }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <input type="date" name="from" value="{{ selected.from }}" class="border rounded p-2" />
+    <input type="date" name="to" value="{{ selected.to }}" class="border rounded p-2" />
+    <div class="flex gap-2">
+      <input type="text" name="q" placeholder="Search…" value="{{ selected.q }}" class="border rounded p-2 w-full" />
+      <button class="bg-blue-600 text-dark px-3 rounded">Filter</button>
+      <a href="{% url 'audit_log_list' %}" class="border px-3 rounded">Reset</a>
+    </div>
+  </form>
+
+  <!-- Table -->
+  <div class="bg-white rounded shadow overflow-x-auto">
+    <table class="min-w-full table-auto text-sm">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-3 py-2">Time</th>
+          <th class="px-3 py-2">User</th>
+          <th class="px-3 py-2">Action</th>
+          <th class="px-3 py-2">Model</th>
+          <th class="px-3 py-2">Object</th>
+          <th class="px-3 py-2 text-left">Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in page_obj %}
+        <tr class="border-t hover:bg-gray-50">
+          <td class="px-3 py-2 whitespace-nowrap">{{ log.timestamp|date:"Y-m-d H:i" }}</td>
+          <td class="px-3 py-2">{{ log.user|default:"—" }}</td>
+          <td class="px-3 py-2">{{ log.action }}</td>
+          <td class="px-3 py-2">{{ log.model_name }}</td>
+          <td class="px-3 py-2">
+            <a class="text-blue-600 underline"
+               href="{% url 'audit_log_object' log.model_name log.object_id %}">
+              #{{ log.object_id }}
+            </a>
+          </td>
+          <td class="px-3 py-2 text-left">{{ log.change_message|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-gray-500 py-4">No logs found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-center items-center mt-4 gap-2">
+    {% if page_obj.has_previous %}
+      <a href="?{% if selected.model %}model={{selected.model}}&{% endif %}
+                {% if selected.action %}action={{selected.action}}&{% endif %}
+                {% if selected.user %}user={{selected.user}}&{% endif %}
+                {% if selected.from %}from={{selected.from}}&{% endif %}
+                {% if selected.to %}to={{selected.to}}&{% endif %}
+                {% if selected.q %}q={{selected.q}}&{% endif %}
+                page=1" class="border px-2 py-1 rounded">« First</a>
+      <a href="?{% if selected.model %}model={{selected.model}}&{% endif %}
+                {% if selected.action %}action={{selected.action}}&{% endif %}
+                {% if selected.user %}user={{selected.user}}&{% endif %}
+                {% if selected.from %}from={{selected.from}}&{% endif %}
+                {% if selected.to %}to={{selected.to}}&{% endif %}
+                {% if selected.q %}q={{selected.q}}&{% endif %}
+                page={{ page_obj.previous_page_number }}" class="border px-2 py-1 rounded">‹ Prev</a>
+    {% endif %}
+
+    <span class="px-3 py-1 border rounded bg-blue-50">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+      <a href="?{% if selected.model %}model={{selected.model}}&{% endif %}
+                {% if selected.action %}action={{selected.action}}&{% endif %}
+                {% if selected.user %}user={{selected.user}}&{% endif %}
+                {% if selected.from %}from={{selected.from}}&{% endif %}
+                {% if selected.to %}to={{selected.to}}&{% endif %}
+                {% if selected.q %}q={{selected.q}}&{% endif %}
+                page={{ page_obj.next_page_number }}" class="border px-2 py-1 rounded">Next ›</a>
+      <a href="?{% if selected.model %}model={{selected.model}}&{% endif %}
+                {% if selected.action %}action={{selected.action}}&{% endif %}
+                {% if selected.user %}user={{selected.user}}&{% endif %}
+                {% if selected.from %}from={{selected.from}}&{% endif %}
+                {% if selected.to %}to={{selected.to}}&{% endif %}
+                {% if selected.q %}q={{selected.q}}&{% endif %}
+                page={{ page_obj.paginator.num_pages }}" class="border px-2 py-1 rounded">Last »</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

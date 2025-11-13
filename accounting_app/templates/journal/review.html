@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<!-- Optional: Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .card {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .card-header {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .btn {
+    border-radius: 8px;
+  }
+
+  .info-list li {
+    margin-bottom: 0.5rem;
+  }
+</style>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8 col-xl-6">
+      <div class="card">
+        <div class="card-header bg-warning text-dark d-flex align-items-center rounded-top-4">
+          <i class="bi bi-check2-square me-2"></i> Review Journal Entry Approval #{{ approval.pk }}
+        </div>
+
+        <div class="card-body">
+
+          <ul class="list-unstyled info-list mb-4">
+            <li><strong>Title:</strong> {{ approval.title|default:"(No Title)" }}</li>
+            <li><strong>Status:</strong> <span class="badge bg-info text-dark">{{ approval.status }}</span></li>
+            <li>
+              <strong>Target JE:</strong>
+              <a href="{% url 'journal_entry_detail' pk=approval.target_id %}">
+                #{{ approval.target_id }}
+              </a>
+            </li>
+          </ul>
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="comment" class="form-label">Comment (optional)</label>
+              <textarea
+                id="comment"
+                name="comment"
+                rows="4"
+                class="form-control"
+                placeholder="Add your review comment..."></textarea>
+            </div>
+
+            <div class="d-flex flex-wrap gap-3 mt-4">
+              <button type="submit" class="btn btn-success px-4">
+                <i class="bi bi-check-circle me-1"></i> Mark as Reviewed
+              </button>
+              <a href="{% url 'journal_entry_detail' pk=approval.target_id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left-circle me-1"></i> Back
+              </a>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

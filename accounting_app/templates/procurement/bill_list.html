@@ -1,0 +1,84 @@
+
+{% extends "base.html" %}
+
+{% block title %}Vendor Bills{% endblock %}
+
+{% block 'content' %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3">Vendor Bills</h1>
+    <div>
+      {% if request.user.role|lower == "accountant" %}
+        <a href="{% url 'bill_create' %}" class="btn btn-sm btn-primary">+ New Bill</a>
+      {% endif %}
+      <a href="{% url 'po_list' %}" class="btn btn-sm btn-secondary">View POs</a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle bg-white">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Bill #</th>
+          <th scope="col">Vendor</th>
+          <th scope="col">PO #</th>
+          <th scope="col">Date</th>
+          <th scope="col">Status</th>
+          <th scope="col">Total</th>
+          {% if request.user.role|lower == "accountant" %}
+            <th scope="col">Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in objects %}
+        <tr>
+          <td><a href="{% url 'bill_detail' pk=o.pk %}">{{ o.number }}</a></td>
+          <td>{{ o.vendor.name }}</td>
+          <td>
+            {% if o.po %}
+              <a href="{% url 'po_detail' pk=o.po.pk %}">{{ o.po.number }}</a>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>{{ o.bill_date|date:"d M Y" }}</td>
+          <td>
+            {% if o.is_paid %}
+              <span class="badge bg-success">Paid</span>
+            {% else %}
+              <span class="badge bg-danger">Unpaid</span>
+            {% endif %}
+          </td>
+          <td>₹{{ o.total }}</td>
+
+          {% if request.user.role|lower == "accountant" %}
+            <td>
+              {% if not o.is_paid %}
+                <div class="btn-group btn-group-sm" role="group">
+                  <form action="{% url 'vendor_mark_as_paid' o.pk %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-success">Mark Paid</button>
+                  </form>
+
+                  <form action="{% url 'vendor_razorpay_pay' o.pk %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-primary">Pay with Razorpay</button>
+                  </form>
+                </div>
+              {% else %}
+                <small class="text-muted">Paid on {{ o.paid_on|date:"d M Y" }}</small>
+              {% endif %}
+            </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{% if request.user.role|lower == 'accountant' %}7{% else %}6{% endif %}" class="text-center text-muted">No bills yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

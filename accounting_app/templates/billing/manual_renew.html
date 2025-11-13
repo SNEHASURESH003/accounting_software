@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+ <div class="form-actions">
+     
+      <a href="{% url 'plan_list' %}" class="btn btn-secondary">← Back to Plans</a>
+    </div>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-5">
+          <h2 class="mb-4 text-primary fw-bold text-center">🔁 Renew Your Subscription</h2>
+
+          {% if subscription %}
+            <div class="mb-4 text-center">
+              <p class="fs-5">
+                <strong>Subscribed Plan:</strong>
+                <span class="text-success">{{ subscription.plan.name }}</span>
+              </p>
+              <p class="fs-6">
+                <strong>Next Billing Date:</strong>
+                <span>{{ subscription.next_billing_date }}</span>
+              </p>
+            </div>
+
+            {% if already_renewed %}
+              <div class="alert alert-info text-center">
+                ✅ You have already renewed today.
+              </div>
+            {% else %}
+              <form method="post" class="text-center">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary btn-lg px-4">
+                  🔁 Renew Now
+                </button>
+              </form>
+            {% endif %}
+
+          {% else %}
+            <div class="alert alert-warning text-center">
+              <i class="bi bi-exclamation-circle"></i>
+              No active subscription found.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

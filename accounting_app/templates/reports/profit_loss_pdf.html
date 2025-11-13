@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Profit & Loss Report</title>
+    <style>
+        body {
+            font-family: "Helvetica", sans-serif;
+            font-size: 14px;
+            margin: 40px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h3 {
+            background-color: #eee;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        td, th {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+        }
+        .right {
+            text-align: right;
+        }
+        .total {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Profit & Loss Statement</h1>
+
+    <div class="section">
+        <h3>Revenues</h3>
+        <table>
+            <thead>
+                <tr><th>Name</th><th class="right">Amount (Rs.)</th></tr>
+            </thead>
+            <tbody>
+                {% for name, amt in revenues %}
+                <tr><td>{{ name }}</td><td class="right">{{ amt }}</td></tr>
+                {% empty %}
+                <tr><td colspan="2">No revenue data.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h3>Expenses</h3>
+        <table>
+            <thead>
+                <tr><th>Name</th><th class="right">Amount (Rs.)</th></tr>
+            </thead>
+            <tbody>
+                {% for name, amt in expenses %}
+                <tr><td>{{ name }}</td><td class="right">{{ amt }}</td></tr>
+                {% empty %}
+                <tr><td colspan="2">No expenses data.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h3>Net Profit</h3>
+        <table>
+            <tr class="total">
+                <td>Total</td>
+                <td class="right">Rs. {{ net_profit }}</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

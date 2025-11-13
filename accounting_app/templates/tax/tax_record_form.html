@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<div class="container py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-dark mb-0">📄 Add Tax Record</h2>
+    <a href="{% url 'tax_record_list' %}" class="btn btn-outline-secondary">
+      ← Back to Records
+    </a>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">🧾 Tax Record Details</h5>
+    </div>
+
+    <div class="card-body">
+      <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        {% for field in form.visible_fields %}
+          <div class="mb-3 row">
+            <label for="{{ field.id_for_label }}" class="col-md-3 col-form-label text-end fw-semibold">
+              {{ field.label }}{% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+            </label>
+            <div class="col-md-6">
+              {% if field.name == "notes" or field.name == "description" %}
+                {{ field|add_class:"form-control"|attr:"rows:4"|attr:"style:resize:vertical;" }}
+              {% elif field.field.widget.input_type == "checkbox" %}
+                <div class="form-check mt-2">
+                  {{ field|add_class:"form-check-input" }}
+                  <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.help_text|default:field.label }}</label>
+                </div>
+              {% else %}
+                {{ field|add_class:"form-control" }}
+              {% endif %}
+
+              {% if field.help_text and field.field.widget.input_type != "checkbox" %}
+                <div class="form-text text-muted">{{ field.help_text }}</div>
+              {% endif %}
+
+              {% for error in field.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+
+        <!-- Submit Buttons -->
+        <div class="mt-4 d-flex justify-content-between">
+          <button class="btn btn-success px-4" type="submit">💾 Save Record</button>
+          <a href="{% url 'tax_record_list' %}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

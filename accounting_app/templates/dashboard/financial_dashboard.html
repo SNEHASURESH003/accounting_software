@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block 'content' %}
+
+<style>
+  body{
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  /* Print */
+  @media print{
+    header, .site-header, .navbar, .no-print, button, .btn-download { display:none !important; }
+    @page { margin: 10mm; }
+    body{ margin:0; background:#fff !important; }
+    *{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+
+  .dash-wrapper{
+    max-width: 900px; margin: 30px auto;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    padding: 36px 44px; border: 1px solid #d0d8e0; border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  }
+  .dash-header{ display:flex; justify-content:space-between; align-items:center;
+    border-bottom: 1px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 18px; }
+
+  h2{ margin: 10px 0 16px; text-align:center; }
+
+  .report-table{ width:100%; border-collapse: collapse; font-size: 14px; }
+  .report-table th{
+    background:#f3f4f6; color:#0f0e0e; padding:10px; border:1px solid #e5e7eb; text-align:center;
+  }
+  .report-table td{
+    padding:10px; border:1px solid #e5e7eb; text-align:center; background:#fff;
+  }
+  .report-table tbody tr:nth-child(odd) td{ background:#fafafa; }
+
+  .actions { display:flex; gap:10px; margin:12px; }
+  .btn-download{
+    display:inline-block; padding:8px 12px; border-radius:8px; text-decoration:none;
+    background:#6c757d; color:#fff; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,.08);
+  }
+</style>
+
+<!-- Actions -->
+<div class="no-print actions">
+  <button onclick="window.print()">🖨️ Print Report</button>
+  {% comment %} <a href="{% url 'download_financial_dashboard_pdf' %}" class="btn-download">⬇️ Download PDF</a> {% endcomment %}
+</div>
+
+<div class="dash-wrapper">
+  <!-- Header -->
+  <div class="dash-header">
+    <div class="company-logo">
+      {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo" height="64"/>
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div><strong>Inventura Tech</strong></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Title -->
+  <h2>📊 Financial Dashboard</h2>
+
+  <!-- KPI Summary -->
+  <table class="report-table" style="margin-bottom:18px;">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Amount (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Total Revenue</td>
+        <td style="background-color:#E8F5E9; color:#1B5E20; font-weight:700; border:1px solid #000;">
+          ₹{{ revenue|default_if_none:"0.00"|floatformat:2 }}
+        </td>
+      </tr>
+      <tr>
+        <td>Total Expenses</td>
+        <td style="background-color:#FDECEA; color:#B71C1C; font-weight:700; border:1px solid #000;">
+          ₹{{ expenses|default_if_none:"0.00"|floatformat:2 }}
+        </td>
+      </tr>
+      <tr>
+        <td>Net Profit</td>
+        <td style="background-color:#E3F2FD; color:#0D47A1; font-weight:700; border:1px solid #000;">
+          ₹{{ net_profit|default_if_none:"0.00"|floatformat:2}}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Outstanding Invoices (with tax) -->
+  <table class="report-table" style="margin-bottom:18px;">
+    <thead>
+      <tr>
+        <th colspan="2">Outstanding Invoices (Tax-Inclusive)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="text-align:left;">Amount Due (incl. GST)</td>
+        <td style="background-color:#FFF3CD; color:#8A6D3B; font-weight:700; border:1px solid #000; text-align:right;">
+          ₹{{ outstanding_with_tax|default_if_none:"0.00"|floatformat:2 }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Top Clients (with tax) -->
+  <h5 style="margin:10px 0;">⭐ Top Clients</h5>
+  <table class="report-table" style="margin-bottom:18px;">
+    <thead>
+      <tr>
+        <th>Client</th>
+        <th>Total (₹, incl. tax)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for client in top_clients %}
+      <tr>
+        <td style="text-align:left;">{{ client.client_name }}</td>
+        <td>₹{{ client.total_with_tax|default_if_none:"0.00"|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="text-muted">No client data available.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Tax Summary -->
+  <h5 style="margin:10px 0;">% Tax Summary</h5>
+  <table class="report-table" style="margin-bottom:18px;">
+    <thead>
+      <tr>
+        <th>Tax Type</th>
+        <th>Total Tax (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tax in tax_summary %}
+      <tr>
+        <td>{{ tax.tax_type }}</td>
+        <td>₹{{ tax.total|default_if_none:"0.00"|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="text-muted">No tax data available.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- TDS -->
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th colspan="2">TDS</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="text-align:left;">Total TDS Collected</td>
+        <td>₹{{ tds_total|default_if_none:"0.00"|floatformat:2 }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+{% endblock %}

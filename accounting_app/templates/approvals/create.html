@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<!-- Google Fonts: Poppins -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .card {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .btn {
+    border-radius: 8px;
+  }
+
+  label {
+    font-weight: 500;
+  }
+</style>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8 col-xl-6">
+      <div class="card border-primary">
+        <div class="card-header bg-primary text-white rounded-top-4">
+          <h5 class="mb-0">Create Approval Request for {{ model }} #{{ object_id }}</h5>
+        </div>
+
+        <div class="card-body">
+          {% if messages %}
+            <div class="alert alert-info">
+              <ul class="mb-0">
+                {% for message in messages %}
+                  <li>{{ message }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="title" class="form-label">Approval Title</label>
+              <input type="text" id="title" name="title" class="form-control" placeholder="Enter a descriptive title" required>
+            </div>
+
+            <div class="d-flex flex-wrap gap-3 mt-4">
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-plus-circle me-1"></i> Create
+              </button>
+              <a href="{% url 'approvals_for_object' app_label=app_label model=model object_id=object_id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left-circle me-1"></i> Cancel
+              </a>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

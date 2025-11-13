@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Compliance Dashboard{% endblock %}
+
+{% block 'content' %}
+<div class="container mt-4">
+    <h2 class="mb-4">📊 Compliance & Tax Filing Dashboard</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>👤 Client</th>
+                    <th>📄 GSTR-1</th>
+                    <th>📄 GSTR-3B</th>
+                    <th>📄 GSTR-9</th>
+                    <th>📎 TDS</th>
+                    <th>🧾 E-Invoice</th>
+                    <th>🚚 E-Way Bill</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                    {% if client.id %}
+                    <tr>
+                        <td><strong>{{ client.name }}</strong></td>
+                        <td>
+                            <a href="{% url 'generate_gstr1' client.id %}" class="btn btn-sm btn-outline-primary">
+                                Generate
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'generate_gstr3b' client.id %}" class="btn btn-sm btn-outline-primary">
+                                Generate
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'generate_gstr9' client.id %}" class="btn btn-sm btn-outline-primary">
+                                Generate
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'generate_tds' client.id %}" class="btn btn-sm btn-outline-success">
+                                View
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'generate_einvoice' client.id %}" class="btn btn-sm btn-outline-warning">
+                                View
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'generate_ewaybill' client.id %}" class="btn btn-sm btn-outline-info">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">No clients found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

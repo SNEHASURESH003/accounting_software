@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block 'content' %}
+ <div class="form-actions">
+     
+      <a href="{% url 'quote_list' %}" class="btn btn-secondary">← Back to Quotes</a>
+         <a href="{% url 'revenue_dashboard' %}" class="btn btn-secondary">← Back to Revenues</a>
+ </div>
+<h2>Pay Invoice #{{ invoice.id }}</h2>
+<p>Amount: ₹{{ amount }}</p>
+
+<form action="{% url 'razorpay_callback' %}" method="POST">
+  {% csrf_token %}
+  <script
+    src="https://checkout.razorpay.com/v1/checkout.js"
+    data-key="{{ razorpay_key }}"
+    data-amount="{{ amount|floatformat:0 }}00"
+    data-currency="INR"
+    data-order_id="{{ order_id }}"
+    data-buttontext="Pay with Razorpay"
+    data-name="Invoice Payment"
+    data-description="Pay for Invoice #{{ invoice.id }}"
+    data-prefill.name="{{ invoice.client.name }}"
+    data-theme.color="#0e4b8b">
+  </script>
+  <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+</form>
+{% endblock %}

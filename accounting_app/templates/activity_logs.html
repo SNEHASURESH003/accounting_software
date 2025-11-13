@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<style>
+  .activity-logs-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.08);
+  }
+  .activity-logs-header {
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;
+  }
+  .activity-logs-header h2 { margin:0; color:#222; font-weight:700; }
+  .muted { color:#6b7280; font-size:.9rem; }
+
+  .activity-logs-table { width:100%; border-collapse:collapse; font-size:14px; }
+  .activity-logs-table th, .activity-logs-table td {
+    padding:12px 14px; text-align:left; border-bottom:1px solid #eef1f5;
+  }
+  .activity-logs-table th {
+    background:#0d6efd; color:#fff; font-weight:700; letter-spacing:.2px;
+  }
+  .activity-logs-table tr:hover { background:#f8fafc; }
+
+  .badge { display:inline-block; padding:.35rem .55rem; border-radius:999px; font-size:.75rem; font-weight:700; }
+  .badge-login  { background:#16a34a; color:#fff; }  /* green */
+  .badge-logout { background:#6b7280; color:#fff; }  /* gray  */
+  .badge-failed { background:#ef4444; color:#fff; }  /* red   */
+
+  @media (max-width: 768px) {
+    .activity-logs-table, .activity-logs-table thead, .activity-logs-table tbody,
+    .activity-logs-table th, .activity-logs-table td, .activity-logs-table tr { display:block; width:100%; }
+    .activity-logs-table thead tr { display:none; }
+    .activity-logs-table tr { margin-bottom:14px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; }
+    .activity-logs-table td { text-align:right; padding-left:50%; position:relative; border-bottom:none; }
+    .activity-logs-table td::before {
+      content: attr(data-label); position:absolute; left:14px; width:46%; font-weight:600; color:#374151; text-align:left;
+    }
+  }
+</style>
+
+<div class="activity-logs-container">
+  <div class="activity-logs-header">
+    <h2>User Activity Logs</h2>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">Refresh</button>
+    </div>
+  </div>
+
+  <table class="activity-logs-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Action</th>
+        <th>Timestamp</th>
+        <th>IP Address</th>
+        <th>User Agent</th>
+      </tr>
+    </thead>
+    <tbody>
+      {# Use page_obj if your view provides it; otherwise fall back to logs #}
+      {% if page_obj %}
+        {% for log in page_obj %}
+          <tr>
+           <td data-label="User">
+  {% if log.user %}
+    {{ log.user.email }}
+  {% elif log.attempted_username %}
+    <span class="text-danger fw-bold">{{ log.use.email }}</span>
+  {% else %}
+    —
+  {% endif %}
+</td>
+
+            <td data-label="Action">
+              {% if log.action == 'login' %}
+                <span class="badge badge-login">Login</span>
+              {% elif log.action == 'logout' %}
+                <span class="badge badge-logout">Logout</span>
+              {% elif log.action == 'failed_login' %}
+                <span class="badge badge-failed">Failed Login</span>
+              {% else %}
+                <span class="badge badge-logout">{{ log.get_action_display }}</span>
+              {% endif %}
+            </td>
+            <td data-label="Timestamp">
+              {{ log.timestamp|date:"M d, Y, h:i a" }}
+              <div class="muted">({{ log.timestamp|timesince }} ago)</div>
+            </td>
+            <td data-label="IP Address">{{ log.ip_address|default:"—" }}</td>
+            <td data-label="User Agent">{{ log.user_agent|truncatechars:80|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-center muted">No activity yet.</td></tr>
+        {% endfor %}
+      {% else %}
+        {% for log in logs %}
+          <tr>
+            <td data-label="User">{{ log.user|default:"—" }}</td>
+            <td data-label="Action">
+              {% if log.action == 'login' %}
+                <span class="badge badge-login">Login</span>
+              {% elif log.action == 'logout' %}
+                <span class="badge badge-logout">Logout</span>
+              {% elif log.action == 'failed_login' %}
+                <span class="badge badge-failed">Failed Login</span>
+              {% else %}
+                <span class="badge badge-logout">{{ log.get_action_display }}</span>
+              {% endif %}
+            </td>
+            <td data-label="Timestamp">
+              {{ log.timestamp|date:"M d, Y, h:i a" }}
+              <div class="muted">({{ log.timestamp|timesince }} ago)</div>
+            </td>
+            <td data-label="IP Address">{{ log.ip_address|default:"—" }}</td>
+            <td data-label="User Agent">{{ log.user_agent|truncatechars:80|default:"—" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-center muted">No activity yet.</td></tr>
+        {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+
+  {% if page_obj and page_obj.paginator.num_pages > 1 %}
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <span class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      <div>
+        {% if page_obj.has_previous %}
+          <a class="btn btn-sm btn-outline-primary" href="?page={{ page_obj.previous_page_number }}">Prev</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a class="btn btn-sm btn-outline-primary" href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  // Optional: auto-refresh every 15s. Remove if you don’t want it.
+  setInterval(function(){ location.reload(); }, 15000);
+</script>
+
+{% endblock %}

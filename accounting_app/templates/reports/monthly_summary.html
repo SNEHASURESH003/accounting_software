@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<style>
+  :root { --footer-height: 140px; } /* will be set dynamically below */
+
+  /* Only show on paper */
+  .print-only { display: none; }
+  @media print { .print-only { display: block !important; } }
+
+  /* Wrap content so the printed footer doesn't overlap it */
+  .report-sheet { padding-bottom: var(--footer-height); }
+
+  .print-actions .btn-print{
+    border: none; border-radius: 8px; padding: .45rem .9rem;
+    background: #1976d2; color: #fff; font-weight: 600;
+  }
+  .print-actions .btn-print:hover{ filter: brightness(.92); }
+
+  /* ===== PRINT ===== */
+  @media print{
+    @page { margin: 12mm; }
+    body { background:#fff !important; }
+    header, .site-header, .navbar, .sidebar, .topbar, .app-header, .no-print {
+      display: none !important;   /* hide site chrome & screen-only actions */
+    }
+
+    footer, .site-footer {
+      position: fixed !important; bottom: 0; left: 0; right: 0;
+      display: block !important; visibility: visible !important; z-index: 9999;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .report-sheet { padding-bottom: var(--footer-height) !important; }
+
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    .card-body { padding: 1.25rem !important; }
+    .table { font-size: 13px; }
+    .table th, .table td { padding: .35rem .5rem !important; }
+  }
+</style>
+
+<div class="report-sheet">
+  <div class="container my-4" style="max-width: 600px;">
+    <!-- Screen header + print button (hidden in print by .no-print) -->
+    <div class="d-flex justify-content-between align-items-center mb-2 no-print print-actions">
+      <h2 class="fs-2 fw-semibold mb-0">📅 Monthly Summary</h2>
+      <button type="button" class="btn-print" onclick="window.print()">🖨️ Print</button>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <!-- This heading will show ONLY in print -->
+        <h2 class="fs-2 fw-semibold mb-4 text-center print-only">📅 Monthly Summary</h2>
+
+        <table class="table table-sm table-borderless mb-3">
+          <tbody>
+            <tr>
+              <th class="text-muted">🧾 Invoices this month</th>
+              <td><span class="badge bg-primary">{{ invoice_count }}</span></td>
+            </tr>
+            <tr>
+              <th class="text-muted">💰 Payments received</th>
+              <td><span class="badge bg-success">{{ payment_count }}</span></td>
+            </tr>
+            <tr>
+              <th class="text-muted">🧾 Employee Expenses</th>
+              <td><span class="badge bg-warning text-dark">{{ expense_count }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="d-flex gap-2 no-print">
+          {% comment %} <a class="btn btn-secondary btn-sm" href="{% url 'download_monthly_summary_pdf' %}">⬇ Download as PDF</a> {% endcomment %}
+          <a class="btn btn-outline-dark btn-sm" href="{% url 'kpi_dashboard' %}">⬅ Back to KPI Dashboard</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Reserve the footer’s height so printed content never overlaps it
+  (function () {
+    function setFooterHeightVar() {
+      var f = document.querySelector('footer.site-footer, footer, .site-footer');
+      if (f) {
+        var h = f.offsetHeight || 140;
+        document.documentElement.style.setProperty('--footer-height', h + 'px');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', setFooterHeightVar);
+    window.addEventListener('resize', setFooterHeightVar);
+    if (window.matchMedia) {
+      var mql = window.matchMedia('print');
+      if (mql.addEventListener) mql.addEventListener('change', setFooterHeightVar);
+      else if (mql.addListener) mql.addListener(setFooterHeightVar);
+    }
+    window.onbeforeprint = setFooterHeightVar;
+  })();
+</script>
+
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block 'content' %}
+
+<style>
+  body {
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  /* --- Print Styling --- */
+  @media print {
+    header, .site-header, .navbar, .no-print, button {
+      display: none !important;
+    }
+    @page { margin: 0; }
+    body {
+      margin: 0;
+      background: #fff !important;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+
+    footer nav {
+      display: block !important;
+    }
+
+    .invoice-wrapper {
+      margin: 0 auto;
+      box-shadow: none;
+      page-break-inside: avoid;
+    }
+  }
+
+  .invoice-wrapper {
+    max-width: 850px;
+    margin: 30px auto;
+    background: linear-gradient(to bottom, #e0e0e0, #d6d6d6);
+    padding: 40px 50px;
+    border: 1px solid #d0d8e0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 15px;
+  }
+
+  .invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .invoice-table th {
+    color: #0f0e0eff;
+    padding: 12px;
+    text-align: center;
+  }
+  .invoice-table td {
+    padding: 12px;
+    text-align: center;
+    border: none;
+  }
+  .invoice-table tbody tr:nth-child(odd) { background: #e0e0e0; }
+  .invoice-table tbody tr:nth-child(even) { background: #d6d6d6; }
+
+  /* --- Footer --- */
+  .invoice-footer {
+    text-align: center;
+    font-size: 12px;
+    margin-top: 40px;
+    color: #777;
+  }
+</style>
+
+<!-- Print Button -->
+<div class="no-print">
+  <button onclick="window.print()">🖨️ Print Report</button>
+</div>
+
+<div class="invoice-wrapper">
+
+  <!-- Header -->
+  <div class="invoice-header">
+    <div class="company-logo">
+        {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo" height="80" />
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div>
+          <div class="sb-company">Inventura Tech</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Title -->
+  <h2 class="text-dark text-center">📊 Tax Summary Report</h2>
+
+  <!-- Detailed Tax Records -->
+  <h3 class="section-title">🗓️ Detailed Tax Records</h3>
+  <table class="invoice-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Tax Type</th>
+        <th>Taxable Amount (₹)</th>
+        <th>Tax Amount (₹)</th>
+        <th>Filed?</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in records %}
+      <tr>
+        <td>{{ record.date }}</td>
+        <td>{{ record.tax_type }}</td>
+        <td>₹{{ record.taxable_amount|floatformat:2 }}</td>
+        <td>₹{{ record.tax_amount|floatformat:2 }}</td>
+        <td>
+          {% if record.filed %}
+            ✅ Yes
+          {% else %}
+            ❌ No
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No tax records available.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Summary by Tax Type -->
+  <h3 class="section-title">🧾 Summary by Tax Type</h3>
+  <table class="invoice-table">
+    <thead>
+      <tr>
+        <th>Tax Type</th>
+        <th>Total Taxable (₹)</th>
+        <th>Total Tax (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in summary %}
+      <tr>
+        <td>{{ row.tax_type }}</td>
+        <td>₹{{ row.taxable_total|floatformat:2 }}</td>
+        <td>₹{{ row.total_tax|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+      {% if grand_totals.taxable_total %}
+      <tr>
+  <td style="background-color:#E8F5E9; color:#1B5E20; font-weight:700; border:1px solid #000;">
+    Grand Total
+  </td>
+  <td style="background-color:#E8F5E9; color:#1B5E20; font-weight:700; border:1px solid #000; text-align:right;">
+    ₹{{ grand_totals.taxable_total|floatformat:2 }}
+  </td>
+  <td style="background-color:#E8F5E9; color:#1B5E20; font-weight:700; border:1px solid #000; text-align:right;">
+    ₹{{ grand_totals.total_tax|floatformat:2 }}
+  </td>
+</tr>
+
+      {% endif %}
+    </tbody>
+  </table>
+
+  <!-- Footer -->
+ 
+
+</div>
+
+{% endblock %}

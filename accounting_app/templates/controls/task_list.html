@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Control Tasks{% endblock %}
+
+{% block 'content' %}
+<div style="padding: 20px; font-family: Arial, sans-serif;">
+
+  <h1 style="font-size: 30px; color: #333;"><strong>🗂️ Control Tasks</strong></h1>
+
+  {% if messages %}
+    <ul style="background-color: #eef; border: 1px solid #99c; padding: 10px; list-style: square; margin-bottom: 20px;">
+      {% for m in messages %}
+        <li>{{ m }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <p style="margin: 10px 0 20px;">
+    <a href="{% url 'controls_dashboard' %}" style="color: #007BFF;"><strong>⬅ Back to Controls</strong></a> |
+    <a href="{% url 'task_create' %}" style="color: #28a745;"><strong>➕ New Task</strong></a>
+  </p>
+
+  {% if tasks %}
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background-color: #f0f0f0;">
+            <th style="border: 1px solid #ccc; padding: 8px;">Title</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Area</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Cadence</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Owner</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Active</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tasks %}
+          <tr>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ t.title }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ t.area|default:"—" }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ t.cadence }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ t.owner|default:"—" }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">
+              {% if t.active %}
+                <span style="color: green;">Yes</span>
+              {% else %}
+                <span style="color: red;">No</span>
+              {% endif %}
+            </td>
+            <td style="border: 1px solid #ccc; padding: 8px;">
+              <a href="{% url 'task_update' pk=t.pk %}" style="color: #007BFF; ">Edit</a> |
+              <a href="{% url 'task_delete' pk=t.pk %}" style="color: #dc3545; ">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p style="margin-top: 20px;">
+      No tasks yet. <a href="{% url 'task_create' %}" style="color: #28a745;">Create one</a>.
+    </p>
+  {% endif %}
+
+</div>
+{% endblock %}

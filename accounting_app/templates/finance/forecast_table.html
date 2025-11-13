@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block 'content' %}
+<style>
+  body { background: linear-gradient(to bottom,#e0e0e0,#d6d6d6); font-family:'Segoe UI',Arial,sans-serif; }
+
+  .wrap { 
+    max-width: 1100px; margin: 34px auto;
+    background: linear-gradient(to bottom,#e0e0e0,#d6d6d6);
+    border: 1px solid #d0d8e0; border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,.06);
+    padding: 28px 36px;
+  }
+    .brand-block{ display:flex; align-items:center; gap:10px; }
+  .brand-block img{ height:56px; }
+
+  .header-row { display:flex; justify-content:space-between; align-items:center;
+                border-bottom:1px solid #cfd6de; padding-bottom:12px; margin-bottom:14px; }
+  .title { font-size:28px; font-weight:800; color:#1976d2; margin:0; }
+
+  /* Actions */
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 14px; justify-content:center; }
+  .btn { padding:9px 14px; border-radius:8px; border:1px solid #cfd6de;
+         background:#fff; color:#0f172a; text-decoration:none; cursor:pointer; }
+  .btn-primary { background:#1976d2; color:#fff; border-color:#1976d2; }
+  .btn-outline { background:#fff; color:#1976d2; border-color:#1976d2; }
+  .btn:hover { filter:brightness(.97); }
+
+  /* Table */
+  .table-responsive { overflow-x:auto; }
+  table.tbl { width:100%; border-collapse:collapse; font-size:14px; margin-top:8px; }
+  table.tbl thead tr {
+    background: linear-gradient(90deg,#6a1b9a 0%,#3949ab 25%,#1976d2 50%,#0288d1 75%,#26c6da 100%);
+    color:#fff;
+  }
+  table.tbl th, table.tbl td { padding:12px; border:none; }
+  table.tbl td { text-align:center; background:#fff; }
+  table.tbl td.num { text-align:center; white-space:nowrap; }
+  table.tbl tbody tr:nth-child(odd) td { background:#f6f7f9; }
+  .forecast-amount { color:#15803d; font-weight:700; }
+
+  /* Pagination */
+  .pagination { margin-top:20px; text-align:center; }
+
+  /* Print */
+  @media print {
+    @page { margin:14mm; }
+    header,.site-header,.navbar,.actions,.no-print { display:none !important; }
+
+    body { background:#fff !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    .wrap { background:#fff !important; border:none !important; box-shadow:none !important; padding:0; margin:0; max-width:100% !important; }
+
+    .table-responsive { overflow:visible !important; max-width:none !important; width:auto !important; }
+    .table-responsive::-webkit-scrollbar { display:none !important; }
+
+    table.tbl { width:100% !important; font-size:12px; border-collapse:collapse; }
+    thead { display:table-header-group; }
+    tfoot { display:table-footer-group; }
+    tr,td,th { page-break-inside:avoid; }
+
+    table.tbl thead tr {
+      background: linear-gradient(90deg,#6a1b9a 0%,#3949ab 25%,#1976d2 50%,#0288d1 75%,#26c6da 100%) !important;
+      color:#fff !important;
+    }
+    table.tbl tbody tr:nth-child(odd) td { background:#f3f4f6 !important; }
+  }
+</style>
+
+<!-- Actions -->
+<div class="actions no-print">
+  <a href="{% url 'forecast_rebuild_from_invoices' %}" class="btn btn-outline"
+     onclick="return confirm('Sync forecast from unpaid invoices?');">🔄 Sync</a>
+  <a href="{% url 'forecast_add' %}" class="btn btn-primary">➕ Add Forecast</a>
+  <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+</div>
+
+<div class="wrap">
+  <!-- Header -->
+  <div class="header-row">
+    <div class="brand-block">
+      {% if branding and branding.logo %}
+        <div>
+          <img src="{{ branding.logo.url }}" alt="Logo">
+          <div><strong>{{ branding.company_name }}</strong></div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div style="font-weight:800;">Inventura Tech</div>
+      {% endif %}
+    </div>
+    <h1 class="title">Rolling Forecast </h1>
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Year</th>
+          <th>Project</th>
+          <th class="num">Forecast (₹)</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in page_obj %}
+        <tr>
+          <td>{{ f.month|default:"—" }}</td>
+          <td>{{ f.year }}</td>
+          <td>{{ f.project.name|default:"—" }}</td>
+          <td class="num forecast-amount">₹{{ f.forecast_amount|floatformat:2|intcomma }}</td>
+          <td>{{ f.notes|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align:center; padding:18px;">No forecast entries found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination no-print">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline">⬅ Prev</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline">Next ➡</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

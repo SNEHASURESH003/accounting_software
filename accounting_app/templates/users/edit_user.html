@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<div class="container-fluid px-4 py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-semibold text-dark mb-1">✏️ Edit User</h2>
+      <p class="text-muted small">
+        Modify details for <strong>{{ user_obj.email }}</strong>.
+        {% if user_obj.employee and user_obj.employee.is_contractor %}
+          <span class="badge bg-warning text-dark rounded-pill ms-5">Contractor</span>
+        {% endif %}
+      </p>
+    </div>
+    <a href="{% url 'view_user' user_obj.id %}" class="btn btn-outline-secondary rounded-pill shadow-sm">
+      <i class="bi bi-arrow-left me-1"></i> Cancel
+    </a>
+  </div>
+
+  <div class="card border-0 shadow rounded-4 p-4">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="row g-4">
+        {% for field in form %}
+          <div class="col-md-6">
+            <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+              {{ field.label }}
+              {% if field.field.required %}
+                <span class="text-danger">*</span>
+              {% endif %}
+            </label>
+
+            {% if field.widget_type == 'checkbox' %}
+              <div class="form-check">
+                {{ field }}
+                <label class="form-check-label ms-2" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              </div>
+            {% else %}
+              {{ field|add_class:"form-control form-control-lg shadow-sm rounded-3" }}
+            {% endif %}
+
+            {% if field.help_text %}
+              <div class="form-text">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+              <div class="text-danger small mt-1">{{ field.errors }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="mt-4 d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary btn-lg px-4 rounded-pill shadow-sm">
+          <i class="bi bi-save me-2"></i>Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Asset Detail{% endblock %}
+
+{% block 'content' %}
+<div class="container mt-4">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">{{ asset.name }}</h4>
+    </div>
+
+    <div class="card-body">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>Asset Tag:</strong> {{ asset.asset_tag }}</li>
+        <li class="list-group-item"><strong>Category:</strong> {{ asset.category }}</li>
+        <li class="list-group-item"><strong>Purchase Price:</strong> ₹{{ asset.purchase_price }}</li>
+        <li class="list-group-item"><strong>Useful Life:</strong> {{ asset.useful_life }} years</li>
+        <li class="list-group-item"><strong>Warranty Expiry:</strong> {{ asset.warranty_expiry }}</li>
+        <li class="list-group-item"><strong>Maintenance Schedule:</strong> {{ asset.maintenance_schedule }}</li>
+        <li class="list-group-item"><strong>Next Maintenance Date:</strong> {{ asset.next_maintenance_date }}</li>
+        <li class="list-group-item"><strong>Disposed:</strong> {{ asset.disposed|yesno:"Yes,No" }}</li>
+        {% if asset.disposed %}
+          <li class="list-group-item"><strong>Disposal Date:</strong> {{ asset.disposal_date }}</li>
+          <li class="list-group-item"><strong>Disposal Value:</strong> ₹{{ asset.disposal_value }}</li>
+        {% endif %}
+      </ul>
+
+      <div class="mt-4 text-end">
+        <a href="{% url 'asset_depreciation_detail' asset.pk %}" class="btn btn-outline-primary">
+          📉 View Depreciation
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

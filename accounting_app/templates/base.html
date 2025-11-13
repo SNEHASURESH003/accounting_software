@@ -1,0 +1,791 @@
+{% load static %} <!DOCTYPE html> <html lang="en">
+   <head> 
+    <meta charset="UTF-8" /> <title>{% if branding %}{{ branding.company_name }}{% else %}Cashifyr Executive Dashboard{% endif %}</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- Bootstrap & Icons --> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" /> <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" /> <!-- Optional Duralux + your styles --> <link href="{% static 'assets/assets/css/style.css' %}" rel="stylesheet" /> <link rel="stylesheet" href="{% static 'styles.css' %}" /> {% if branding %} <style>:root{ --brand: {{ branding.primary_color|default:"#6f42c1" }}; }</style> {% else %} <style>:root{ --brand:#6f42c1; }</style>
+      {% endif %} 
+      <style> /* layout */ .site-footer .contact-links{ display:flex; gap:28px; justify-content:center; align-items:center; flex-wrap:wrap; } .site-footer .social-links{ display:flex; gap:14px; justify-content:center; align-items:center; flex-wrap:wrap; } .site-footer .dot{ color:#9aa1a8; } /* links */ .site-footer .link{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; /* no underline */ color:#1e88e5; font-weight:600; } .site-footer .link:hover{ color:#0f5fb6; text-decoration:none; } /* icon-only links (social) */ .site-footer .iconlink{ text-decoration:none; } .site-footer .iconlink:hover{ opacity:.9; } /* circular gradient icons */ .site-footer .ico{ display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background: linear-gradient(135deg,#2bb2ff,#1e6adf); box-shadow:0 2px 4px rgba(0,0,0,.12); flex:0 0 28px; } .site-footer .ico svg{ width:16px; height:16px; display:block; } /* accessibly hide social text but keep for screen readers */ .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; } .dropdown-menu{ max-height:300px; overflow-y:auto; } :root{ --sbw:260px; --sidebar-bg: linear-gradient(to bottom, #e0e0e0ff, #d6d6d6); --page-bg:white; } body{ background:#f3f4f; } #wrapper{ min-height:100vh; } /* Sidebar */ #sidebar-wrapper{ width:var(--sbw); min-width:var(--sbw); max-width:var(--sbw); background: linear-gradient(to bottom, #e0e0e0, #d6d6d6); color:#f8fafc; position:sticky; top:0; height:100vh; overflow-y:auto; overflow-x:hidden; border-right:1px solid linear-gradient(to bottom,#b0a0a0ff, #cabebeff); } #page-content-wrapper{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; background-color: var(--page-bg); } /* Mobile slide-in */ @media (max-width: 991.98px){ #sidebar-wrapper{ margin-left:calc(-1 * var(--sbw)); position:fixed; z-index:1040; } #wrapper.toggled #sidebar-wrapper{ margin-left:0; } #page-content-wrapper{ width:100%; } .offcanvas-backdrop-custom{ position:fixed; inset:0; background:linear-gradient(to bottom, #b0a0a0ff, #b0a0a0ff); display:none; } #wrapper.toggled .offcanvas-backdrop-custom{ display:block; } } .sb-brand-wrap{ padding:16px; text-align:center; } .sb-brand-wrap img{ display:block; margin:0 auto 8px; padding:5px; border-radius:6px; } .sb-company { color: #111; /* dark text */ font-weight: 600; /* optional, makes it stand out */ } .sb-tag{ color:#e5e7eb; font-size:13px; margin-top:-6px; } .sb-group{ margin:8px 10px; background: linear-gradient(to bottom, #7682b9ff, #97a7b3ff);; border:1px solid linear-gradient(to bottom, #7682b9ff, #d6d6d6);; border-radius:12px; overflow:hidden; } .sb-head,.sb-link{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:10px 12px; border:0; background:transparent; color: #01030aff; text-decoration:none; } .sb-head .left,.sb-link .left{ display:flex; align-items:center; gap:10px; } .sb-head i,.sb-link i{ color:#fff; } /* Chevron: right -> down on expand */ .sb-head .chev{ color:#e2e8f0; transition:transform .2s ease; transform: rotate(0deg); } .sb-head[aria-expanded="true"] .chev{ transform: rotate(90deg); } .sb-links .list-group-item{ background:transparent; border:0; color:#eef2f6; padding:8px 16px 8px 44px; text-decoration:none; } .sb-links .list-group-item:hover{ background:rgba(0,0,0,.12); color:#fff; } .sb-links .list-group-item.active{ background:rgba(0,0,0,.18); color:#fff; } .sb-solo{ margin:8px 10px; border-radius:12px; overflow:hidden; background:rgba(0,0,0,.08); border:1px solid rgba(255,255,255,.06); } /* Scrollbar */ #sidebar-wrapper::-webkit-scrollbar{ width:8px; } #sidebar-wrapper::-webkit-scrollbar-thumb{ background:linear-gradient(to bottom, #4f6887ff, #d6d6d6); border-radius:8px; } #sidebar-wrapper::-webkit-scrollbar-track{ background:transparent; } /* Topbar & footer match sidebar */ .topbar{ background: var(--sidebar-bg); border-bottom:1px solid linear-gradient(to bottom, #e0e0e0, #d6d6d6); color:#fff; } .topbar .navbar-brand,.topbar .nav-link{ color:#fff !important; } .topbar .form-control{ color:#fff; background:linear-gradient(to bottom, #e0e0e0, #d6d6d6); border:0; } .topbar .form-control::placeholder{ color:#f1f5f9; } footer{ background: var(--sidebar-bg); border-top:1px solid linear-gradient(to bottom, #7682b9ff, #97a7b3ff); color:#fff; } #menu-toggle{ color:#fff; border-color:#e2e8f0; } #menu-toggle:hover{ background:rgba(255,255,255,.08); color:#fff; } .navbar-brand { color: #060101ff !important; /* pure dark text */ font-weight: 600; /* optional for emphasis */ </style>
+<body class="d-flex flex-column min-vh-100">
+  <div id="wrapper" class="d-flex flex-grow-1">
+    <div class="offcanvas-backdrop-custom" id="sb-backdrop"></div>
+
+    <!-- ========== Sidebar ========== -->
+    <aside id="sidebar-wrapper" class="border-end">
+      {% if branding and branding.logo %}
+        <div class="sb-brand-wrap">
+          <img src="{{ branding.logo.url }}" alt="Logo" height="80" />
+          <div class="sb-company">{{ branding.company_name }}</div>
+          {% if branding.tagline %}<div class="sb-tag">{{ branding.tagline }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div class="sb-brand-wrap">
+          <div class="sb-company">Company name</div>
+        </div>
+      {% endif %}
+
+      {% if request.user.role == "Accountant" and not request.user.is_superadmin  %}
+      <div class="sb-solo">
+        <a href="{% url 'dashboard' %}" class="sb-link">
+          <span class="left"><i class="bi bi-speedometer2"></i> Dashboard</span>
+          <i class="bi bi-chevron-right chev"></i>
+        </a>
+      </div>
+      {% elif request.user.is_superuser and not request.user.is_superadmin %}
+      <div class="sb-solo">
+        <a href="{% url 'dashboard' %}" class="sb-link">
+          <span class="left"><i class="bi bi-speedometer2"></i> Dashboard</span>
+          <i class="bi bi-chevron-right chev"></i>
+        </a>
+      </div>
+      {% endif %}
+
+      {% if request.user.is_superuser and not request.user.is_superadmin %}
+      <div class="sb-solo">
+        <a href="{% url 'users_list' %}" class="sb-link">
+          <span class="left"><i class="bi bi-people-fill"></i> Users</span>
+        </a>
+      </div>
+      {% endif %}
+        {% if request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#superuser" aria-expanded="false">
+            <span class="left"> <i class="bi bi-person-plus"></i> SuperAdmin</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="superuser">
+           <a class="list-group-item" href="{% url 'register_superuser' %}">
+      <i class="bi bi-person-plus"></i> Create Admin
+    </a>
+           <a class="list-group-item" href="{% url 'superuser_list' %}">
+      <i class="bi bi-people"></i> Manage Admins
+    </a>
+          
+          </div>
+        </div>
+        {%endif%}
+      
+
+      <div class="list-group list-group-flush">
+        {% if request.user.role == "Accountant" %}
+        <!-- Core Financials -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#coreFinancials" aria-expanded="false">
+            <span class="left"><i class="bi bi-cash-coin"></i> Core Financials</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="coreFinancials">
+            <a class="list-group-item" href="{% url 'account_list' %}">Chart of Accounts</a>
+            <a class="list-group-item" href="{% url 'trial_balance' %}">Trial Balance</a>
+            <a class="list-group-item" href="{% url 'balance_sheet' %}">Balance Sheet</a>
+            <a class="list-group-item" href="{% url 'profit_loss' %}">Profit &amp; Loss</a>
+            <a class="list-group-item" href="{% url 'create_journal_entry' %}">Journal Entries</a>
+            <a class="list-group-item" href="{% url 'journal_entry_list' %}">View Entries</a>
+            <a class="list-group-item" href="{% url 'reconcile' %}">Reconcile</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#coreFinancials" aria-expanded="false">
+            <span class="left"><i class="bi bi-cash-coin"></i> Core Financials</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="coreFinancials">
+            <a class="list-group-item" href="{% url 'account_list' %}">Chart of Accounts</a>
+            <a class="list-group-item" href="{% url 'trial_balance' %}">Trial Balance</a>
+            <a class="list-group-item" href="{% url 'balance_sheet' %}">Balance Sheet</a>
+            <a class="list-group-item" href="{% url 'profit_loss' %}">Profit &amp; Loss</a>
+            <a class="list-group-item" href="{% url 'journal_entry_list' %}">View Entries</a>
+            <a class="list-group-item" href="{% url 'reconcile' %}">Reconcile</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Projects -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#projects" aria-expanded="false">
+            <span class="left"><i class="bi bi-kanban"></i> Projects</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="projects">
+            <a class="list-group-item" href="{% url 'create_project' %}">Create Project</a>
+            <a class="list-group-item" href="{% url 'project_costing_report' %}">Costing Reports</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#projects" aria-expanded="false">
+            <span class="left"><i class="bi bi-kanban"></i> Projects</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="projects">
+           
+            <a class="list-group-item" href="{% url 'project_costing_report' %}">Costing Reports</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Invoicing -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#invoicing" aria-expanded="false">
+            <span class="left"><i class="bi bi-receipt"></i> Invoicing</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="invoicing">
+            <a class="list-group-item" href="{% url 'invoice_list' %}">Invoices</a>
+               <a class="list-group-item" href="{% url 'ar_aging_report' %}">Aging Report</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#invoicing" aria-expanded="false">
+            <span class="left"><i class="bi bi-receipt"></i> Invoicing</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="invoicing">
+            <a class="list-group-item" href="{% url 'invoice_list' %}">Invoices</a>
+              <a class="list-group-item" href="{% url 'ar_aging_report' %}">Aging Report</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Payroll -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#payroll" aria-expanded="false">
+            <span class="left"><i class="bi bi-wallet2"></i> Payroll</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="payroll">
+            <a class="list-group-item" href="{% url 'client_list' %}">Clients</a>
+            <a class="list-group-item" href="{% url 'employee_list' %}">Employee List</a>
+            <a class="list-group-item" href="{% url 'contractor_list' %}">Contractors</a>
+            <a class="list-group-item" href="{% url 'create_payroll' %}">Create Payroll</a>
+            <a class="list-group-item" href="{% url 'payroll_list' %}">Payroll List</a>
+            <a class="list-group-item" href="{% url 'contractor_payment_list' %}">Contractor Payments</a>
+            <a class="list-group-item" href="{% url 'tax_declaration' %}">Tax Forms</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#payroll" aria-expanded="false">
+            <span class="left"><i class="bi bi-wallet2"></i> Payroll</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="payroll">
+            <a class="list-group-item" href="{% url 'client_list' %}">Clients</a>
+            <a class="list-group-item" href="{% url 'employee_list' %}">Employee List</a>
+            <a class="list-group-item" href="{% url 'contractor_list' %}">Contractors</a>
+            <a class="list-group-item" href="{% url 'payroll_list' %}">Payroll List</a>
+            <a class="list-group-item" href="{% url 'contractor_payment_list' %}">Contractor Payments</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Tax -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#tax" aria-expanded="false">
+            <span class="left"><i class="bi bi-briefcase"></i> Tax</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="tax">
+            <a class="list-group-item" href="{% url 'tax_record_list' %}">Tax Records</a>
+            <a class="list-group-item" href="{% url 'create_tax_record' %}">Add Tax Record</a>
+            <a class="list-group-item" href="{% url 'tax_filing_report' %}">Filing Report</a>
+            <a class="list-group-item" href="{% url 'tds_record_list' %}">TDS Records</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#tax" aria-expanded="false">
+            <span class="left"><i class="bi bi-briefcase"></i> Tax</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="tax">
+            <a class="list-group-item" href="{% url 'tax_record_list' %}">Tax Records</a>
+            <a class="list-group-item" href="{% url 'tax_filing_report' %}">Filing Report</a>
+            <a class="list-group-item" href="{% url 'tds_record_list' %}">TDS Records</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Reports -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#reporting" aria-expanded="false">
+            <span class="left"><i class="bi bi-bar-chart-line"></i> Reports</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="reporting">
+            <a class="list-group-item" href="{% url 'cash_flow' %}">Cash Flow</a>
+            <a class="list-group-item" href="{% url 'budget_vs_actual' %}">Budget vs Actual</a>
+            <a class="list-group-item" href="{% url 'project_profitability_report' %}">Profitability</a>
+            <a class="list-group-item" href="{% url 'tax_summary_report' %}">Tax Summary</a>
+            <a class="list-group-item" href="{% url 'financial_dashboard' %}">Financial Dashboard</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#reporting" aria-expanded="false">
+            <span class="left"><i class="bi bi-bar-chart-line"></i> Reports</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="reporting">
+            <a class="list-group-item" href="{% url 'cash_flow' %}">Cash Flow</a>
+            <a class="list-group-item" href="{% url 'budget_vs_actual' %}">Budget vs Actual</a>
+            <a class="list-group-item" href="{% url 'project_profitability_report' %}">Profitability</a>
+            <a class="list-group-item" href="{% url 'tax_summary_report' %}">Tax Summary</a>
+            <a class="list-group-item" href="{% url 'financial_dashboard' %}">Financial Dashboard</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Integrations -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#integrations" aria-expanded="false">
+            <span class="left"><i class="bi bi-plug"></i> Integrations</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="integrations">
+            <a class="list-group-item" href="{% url 'trello_cards_view' %}">Trello</a>
+            <a class="list-group-item" href="{% url 'crm_clients' %}">CRM Clients</a>
+            {% if request.user.is_superuser %}<a class="list-group-item" href="{% url 'project_list_api' %}">Projects API</a>{% endif %}
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#integrations" aria-expanded="false">
+            <span class="left"><i class="bi bi-plug"></i> Integrations</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="integrations">
+            <a class="list-group-item" href="{% url 'trello_cards_view' %}">Trello</a>
+            <a class="list-group-item" href="{% url 'crm_clients' %}">CRM Clients</a>
+            {% if request.user.is_superuser %}<a class="list-group-item" href="{% url 'project_list_api' %}">Projects API</a>{% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Backup -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#backup" aria-expanded="false">
+            <span class="left"><i class="bi bi-hdd"></i> Backup</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="backup">
+            <a class="list-group-item" href="{% url 'trigger_backup' %}">🔄 Auto Backup Now</a>
+            {% if request.user.is_superuser %}
+              <a class="list-group-item" href="{% url 'gdpr_admin_dashboard' %}">GDPR Admin Panel</a>
+              <a class="list-group-item" href="{% url 'activity_logs' %}">Activity Logs</a>
+            {% endif %}
+            {% if not request.user.is_superuser %}
+              <a class="list-group-item" href="{% url 'gdpr_request' %}">GDPR Request</a>
+            {% endif %}
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#backup" aria-expanded="false">
+            <span class="left"><i class="bi bi-hdd"></i> Backup</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="backup">
+            <a class="list-group-item" href="{% url 'trigger_backup' %}">🔄 Auto Backup Now</a>
+            {% if request.user.is_superuser %}
+              <a class="list-group-item" href="{% url 'gdpr_admin_dashboard' %}">GDPR Admin Panel</a>
+              <a class="list-group-item" href="{% url 'activity_logs' %}">Activity Logs</a>
+            {% endif %}
+            {% if not request.user.is_superuser %}
+              <a class="list-group-item" href="{% url 'gdpr_request' %}">GDPR Request</a>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Compliance & Audit -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#compliance" aria-expanded="false">
+            <span class="left"><i class="bi bi-shield-check"></i> Compliance &amp; Audit</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="compliance">
+            {% if request.user.is_superuser %}
+              <a class="list-group-item" href="{% url 'audit_log_list' %}">🧾 Audit Log</a>
+              <a class="list-group-item" href="{% url 'version_history_all' %}">Version History</a>
+            {% endif %}
+            <a class="list-group-item" href="{% url 'controls_dashboard' %}">Controls Dashboard</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#compliance" aria-expanded="false">
+            <span class="left"><i class="bi bi-shield-check"></i> Compliance &amp; Audit</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="compliance">
+            {% if request.user.is_superuser %}
+              <a class="list-group-item" href="{% url 'audit_log_list' %}">🧾 Audit Log</a>
+              <a class="list-group-item" href="{% url 'version_history_all' %}">Version History</a>
+            {% endif %}
+            <a class="list-group-item" href="{% url 'controls_dashboard' %}">Controls Dashboard</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Advanced Finance -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#advancedFinance" aria-expanded="false">
+            <span class="left"><i class="bi bi-bank"></i> Advanced Finance</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="advancedFinance">
+            <a class="list-group-item" href="{% url 'currency_list' %}">Currencies</a>
+            <a class="list-group-item" href="{% url 'exchange_rate_list' %}">Exchange Rates</a>
+            <a class="list-group-item" href="{% url 'cost_center_list' %}">Cost Centers</a>
+            <a class="list-group-item" href="{% url 'inter_company_list' %}">Inter-Company Transactions</a>
+            <a class="list-group-item" href="{% url 'deferred_revenue_list' %}">Deferred Revenue</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#advancedFinance" aria-expanded="false">
+            <span class="left"><i class="bi bi-bank"></i> Advanced Finance</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="advancedFinance">
+            <a class="list-group-item" href="{% url 'currency_list' %}">Currencies</a>
+            <a class="list-group-item" href="{% url 'exchange_rate_list' %}">Exchange Rates</a>
+            <a class="list-group-item" href="{% url 'cost_center_list' %}">Cost Centers</a>
+            <a class="list-group-item" href="{% url 'inter_company_list' %}">Inter-Company Transactions</a>
+            <a class="list-group-item" href="{% url 'deferred_revenue_list' %}">Deferred Revenue</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Subscription & Billing -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#subscription" aria-expanded="false">
+            <span class="left"><i class="bi bi-credit-card"></i> Subscription &amp; Billing</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="subscription">
+            <a class="list-group-item" href="{% url 'plan_list' %}">Plans</a>
+            {% if request.user.is_superuser %}<a class="list-group-item" href="{% url 'add_plan' %}">Add Plan</a>{% endif %}
+            <a class="list-group-item" href="{% url 'invoices_list' %}">Invoices</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#subscription" aria-expanded="false">
+            <span class="left"><i class="bi bi-credit-card"></i> Subscription &amp; Billing</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="subscription">
+            <a class="list-group-item" href="{% url 'plan_list' %}">Plans</a>
+            {% if request.user.is_superuser %}<a class="list-group-item" href="{% url 'add_plan' %}">Add Plan</a>{% endif %}
+            <a class="list-group-item" href="{% url 'invoices_list' %}">Invoices</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Budgeting & Forecasting -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#forecasting" aria-expanded="false">
+            <span class="left"><i class="bi bi-graph-up-arrow"></i> Budgeting &amp; Forecasting</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="forecasting">
+            <a class="list-group-item" href="{% url 'budget_overview' %}">📘 Budget Overview</a>
+            <a class="list-group-item" href="{% url 'forecast_table' %}">🔁 Forecasts</a>
+            <a class="list-group-item" href="{% url 'what_if_scenarios' %}">🔮 What-If Analysis</a>
+            <a class="list-group-item" href="{% url 'cash_flow_view' %}">💵 Cash Flow</a>
+            <a class="list-group-item" href="{% url 'forecast_vs_actual' %}">📈 Forecast vs Actual</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#forecasting" aria-expanded="false">
+            <span class="left"><i class="bi bi-graph-up-arrow"></i> Budgeting &amp; Forecasting</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="forecasting">
+            <a class="list-group-item" href="{% url 'budget_overview' %}">📘 Budget Overview</a>
+            <a class="list-group-item" href="{% url 'forecast_table' %}">🔁 Forecasts</a>
+            <a class="list-group-item" href="{% url 'what_if_scenarios' %}">🔮 What-If Analysis</a>
+            <a class="list-group-item" href="{% url 'cash_flow_view' %}">💵 Cash Flow</a>
+            <a class="list-group-item" href="{% url 'forecast_vs_actual' %}">📈 Forecast vs Actual</a>
+          </div>
+        </div>
+        {% endif %}
+        {% if  request.user.role == "Accountant" or request.user.is_superuser and not request.user.is_superadmin%}
+        <!-- Procurement -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#procurement" aria-expanded="false">
+            <span class="left"><i class="bi bi-cart-check"></i> Procurement</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="procurement">
+            <a class="list-group-item" href="{% url 'vendor_list' %}">Vendors</a>
+            <a class="list-group-item" href="{% url 'product_list' %}">Products</a>
+            <a class="list-group-item" href="{% url 'pr_list' %}">Purchase Requisitions</a>
+            <a class="list-group-item" href="{% url 'po_list' %}">Purchase Orders</a>
+            <a class="list-group-item" href="{% url 'grn_list' %}">Goods Receipts</a>
+            <a class="list-group-item" href="{% url 'bill_list' %}">Vendor Bills</a>
+            <a class="list-group-item" href="{% url 'three_way_match' %}">3-Way Match Report</a>
+            <a class="list-group-item" href="{% url 'spend_by_account' %}"><i class="bi bi-pie-chart"></i> Spend by Account</a>
+          </div>
+        </div>
+        {% endif %}
+  {% if  request.user.role == "Accountant" or request.user.is_superuser and not request.user.is_superadmin%}
+        <!-- Fixed Asset Management -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#asset" aria-expanded="false">
+            <span class="left"><i class="bi bi-cpu"></i> Fixed Asset Management</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="asset">
+            <a class="list-group-item" href="{% url 'asset_list' %}">Fixed Assets</a>
+          </div>
+        </div>
+        {% endif %}
+
+
+        <!-- Employee Expenses (visible to all except superadmin submit gating) -->
+        {% if not request.user.is_superadmin and not request.user.role == "Accountant" %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#expense" aria-expanded="false">
+            <span class="left"><i class="bi bi-receipt-cutoff"></i> Employee Expenses</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="expense">
+                 {% if   request.user.is_superuser %}
+            <a class="list-group-item" href="{% url 'expense_list' %}">Expense Claims</a>
+             {% endif %}
+            {% if request.user.role == 'Employee' and not request.user.is_superuser and not request.user.is_superadmin %}
+              <a class="list-group-item" href="{% url 'submit_expense' %}">Submit Reimbursement</a>
+            {% endif %}
+            {% if  request.user.is_superuser %}
+              <a class="list-group-item" href="{% url 'review_expenses' %}">Review Expenses</a>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Client Retainer & Milestone Billing -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#milestone" aria-expanded="false">
+            <span class="left"><i class="bi bi-flag"></i> Client Retainer &amp; Milestone Billing</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="milestone">
+            <a class="list-group-item" href="{% url 'quote_list' %}">📄 Quotes</a>
+            <a class="list-group-item" href="{% url 'contract_list' %}">🧾 Quote to Cash</a>
+            {% comment %} <a class="list-group-item" href="{% url 'deal_create' %}">➕ Add Deal</a> {% endcomment %}
+            <a class="list-group-item" href="{% url 'contract_list' %}">📁 Contracts</a>
+            <a class="list-group-item" href="{% url 'revenue_dashboard' %}">Revenue Dashboard</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#milestone" aria-expanded="false">
+            <span class="left"><i class="bi bi-flag"></i> Client Retainer &amp; Milestone Billing</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="milestone">
+            <a class="list-group-item" href="{% url 'quote_list' %}">📄 Quotes</a>
+            <a class="list-group-item" href="{% url 'contract_list' %}">🧾 Quote to Cash</a>
+            {% if request.user.is_superuser or request.user.role == 'Accountant' %}
+              {% comment %} <a class="list-group-item" href="{% url 'deal_create' %}">➕ Add Deal</a> {% endcomment %}
+            {% endif %}
+            <a class="list-group-item" href="{% url 'contract_list' %}">📁 Contracts</a>
+            <a class="list-group-item" href="{% url 'revenue_dashboard' %}">Revenue Dashboard</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- BI & Reports -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#bi" aria-expanded="false">
+            <span class="left"><i class="bi bi-bar-chart-steps"></i> 📈 BI &amp; Reports</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="bi">
+            <a class="list-group-item" href="{% url 'kpi_dashboard' %}">📊 KPI Dashboard</a>
+            <a class="list-group-item" href="{% url 'invoice_report' %}">📁 Invoice Report</a>
+            <a class="list-group-item" href="{% url 'send_monthly_summary' %}">📨 Monthly Summary</a>
+            <a class="list-group-item" href="{% url 'send_monthly_report' %}">📤 Send Monthly Report</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#bi" aria-expanded="false">
+            <span class="left"><i class="bi bi-bar-chart-steps"></i> 📈 BI &amp; Reports</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="bi">
+            <a class="list-group-item" href="{% url 'kpi_dashboard' %}">📊 KPI Dashboard</a>
+            <a class="list-group-item" href="{% url 'invoice_report' %}">📁 Invoice Report</a>
+            <a class="list-group-item" href="{% url 'send_monthly_summary' %}">📨 Monthly Summary</a>
+            <a class="list-group-item" href="{% url 'send_monthly_report' %}">📤 Send Monthly Report</a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if request.user.role == "Accountant" %}
+        <!-- Compliance Reports -->
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#complianceReports" aria-expanded="false">
+            <span class="left"><i class="bi bi-check2-square"></i> Compliance Reports</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="complianceReports">
+            <a class="list-group-item" href="{% url 'compliances_dashboard' %}">Compliance &amp; Tax Filing</a>
+          </div>
+        </div>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <div class="sb-group">
+          <button class="sb-head collapsed" data-bs-toggle="collapse" data-bs-target="#complianceReports" aria-expanded="false">
+            <span class="left"><i class="bi bi-check2-square"></i> Compliance Reports</span>
+            <i class="bi bi-chevron-right chev"></i>
+          </button>
+          <div class="collapse sb-links" id="complianceReports">
+            <a class="list-group-item" href="{% url 'compliances_dashboard' %}">Compliance &amp; Tax Filing</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </aside>
+
+    <!-- ========== Page Content ========== -->
+    <div id="page-content-wrapper" class="d-flex flex-column">
+      <!-- Top Navbar -->
+      <nav class="navbar navbar-expand-lg topbar px-3">
+        <button class="btn btn-outline-light me-3 d-lg-none" id="menu-toggle">
+          <i class="bi bi-list"></i>
+        </button>
+
+  <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+  <i class="bi bi-cash-coin fs-3" style="color:#007bff;"></i>
+  <span style="
+    font-weight:700;
+    font-size:1.25rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    background: linear-gradient(90deg, #007bff, #6610f2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  ">
+    Accounting Software
+  </span>
+</a>
+
+
+        {% if request.user.role == "Accountant" %}
+        <a href="{% url 'dashboard' %}" class="sb-link ms-3 d-none d-lg-inline-flex">
+          <span><i class="bi bi-speedometer2"></i> Dashboard</span>
+        </a>
+        {% elif request.user.is_superuser and not request.user.is_superadmin %}
+        <a href="{% url 'dashboard' %}" class="sb-link ms-3 d-none d-lg-inline-flex">
+          <span><i class="bi bi-speedometer2"></i> Dashboard</span>
+        </a>
+        {% endif %}
+
+        <!-- Right side -->
+        <div class="ms-auto d-flex align-items-center gap-3">
+          {% if not request.user.is_superadmin %}
+          <!-- Messages Dropdown -->
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a class="nav-link position-relative" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-envelope fs-5"></i>
+                {% if navbar_unread_count %}
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">{{ navbar_unread_count }}</span>
+                {% endif %}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:360px;max-height:420px;overflow:auto;">
+                <li><h6 class="dropdown-header">Messages</h6></li>
+                {% if navbar_messages %}
+                  {% for m in navbar_messages %}
+                    <li>
+                      <a class="dropdown-item d-flex flex-column gap-1" href="{% url 'messages_inbox' %}">
+                        <div class="d-flex justify-content-between">
+                          <strong class="text-truncate" style="max-width:220px">{{ m.title }}</strong>
+                          <small class="text-muted">{{ m.created_at|date:"M d, H:i" }}</small>
+                        </div>
+                        <span class="text-muted">{{ m.text|truncatechars:110 }}</span>
+                      </a>
+                    </li>
+                  {% endfor %}
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-center" href="{% url 'audit_log_list' %}">View all</a></li>
+                {% else %}
+                  <li><span class="dropdown-item text-muted">No messages</span></li>
+                {% endif %}
+              </ul>
+            </li>
+          </ul>
+          {% endif %}
+
+          <!-- Profile Dropdown -->
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="ms-2 d-none d-lg-inline">{{ request.user.get_first_name }} {{ request.user.get_last_name }}</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow">
+                {% if not request.user.is_superuser and not request.user.is_superadmin %}
+                  <li><a class="dropdown-item" href="{% url 'profile_view' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                  <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                {% endif %}
+                {% if request.user.is_superuser or request.user.is_superadmin %}
+                  <li><a class="dropdown-item" href="{% url 'branding_settings' %}"><i class="bi bi-gear me-2"></i>Branding Settings</a></li>
+                {% endif %}
+                {% if not request.user.is_superuser and not request.user.is_superadmin %}
+                  <li><a class="dropdown-item" href="#"><i class="bi bi-question-circle me-2"></i>Help</a></li>
+                {% endif %}
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Global Search Modal -->
+      <div class="modal fade" id="globalSearchModal" tabindex="-1" aria-labelledby="globalSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content" style="background:#2b3240;color:#fff;">
+            <div class="modal-header border-0">
+              <h5 class="modal-title" id="globalSearchModalLabel"><i class="bi bi-search me-2"></i>Universal Search</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'global_search' %}" method="get">
+              <div class="modal-body">
+                <input autofocus type="text" name="q" class="form-control form-control-lg" placeholder="Search invoices, bills, vendors, products, projects, assets, taxes, CRM…" />
+                <small class="text-muted d-block mt-2">Tip: Press <kbd>/</kbd> to open search quickly.</small>
+              </div>
+              <div class="modal-footer border-0">
+                <button type="submit" class="btn btn-light"><i class="bi bi-search me-1"></i>Search</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <main class="container-fluid py-4 flex-grow-1">
+        {% block 'content' %}{% endblock %}
+      </main>
+
+      <footer class="py-4 text-center site-footer">
+        <div class="container">
+          <nav class="contact-links">
+            <a href="https://www.inventuratech.com" target="_blank" rel="noopener" class="link">
+              <span class="ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <g fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M2 12h20"></path>
+                    <path d="M12 2c-3 0-5 4.5-5 10s2 10 5 10 5-4.5 5-10-2-10-5-10z"></path>
+                  </g>
+                </svg>
+              </span>
+              <span>www.inventuratech.com</span>
+            </a>
+
+            <span class="dot">•</span>
+
+            <a href="mailto:info@inventuratech.com" class="link">
+              <span class="ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="white" d="M3 6h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zm1.6 2 6.9 5.18a2 2 0 0 0 2.02 0L20.4 8H4.6z"/>
+                </svg>
+              </span>
+              <span>info@inventuratech.com</span>
+            </a>
+
+            <span class="dot">•</span>
+
+            <a href="tel:+918848800852" class="link">
+              <span class="ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="white" d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l1.98-1.98a1 1 0 0 1 1.01-.25 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.07 21 3 13.93 3 5a1 1 0 0 1 1-1h2.28a1 1 0 0 1 1 1c0 1.22.2 2.43.57 3.57a1 1 0 0 1-.25 1.01l-1.98 1.98z"/>
+                </svg>
+              </span>
+              <span>+91 8848800852</span>
+            </a>
+          </nav>
+
+          <nav class="social-links mt-2">
+            <a class="iconlink" href="https://instagram.com/inventuratech" aria-label="Instagram" target="_blank" rel="noopener">
+              <span class="ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="white" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.8a5.2 5.2 0 1 1 0 10.4 5.2 5.2 0 0 1 0-10.4zm0 2a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4zm5.4-.95a1.05 1.05 0 1 0 0-2.1 1.05 1.05 0 0 0 0 2.1z"/>
+                </svg>
+              </span>
+              <span class="sr-only">Instagram</span>
+            </a>
+
+            <a class="iconlink" href="https://twitter.com/inventuratech" aria-label="Twitter" target="_blank" rel="noopener">
+              <span class="ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="white" d="M22.46 6c-.77.35-1.6.58-2.46.69a4.3 4.3 0 0 0 1.88-2.37 8.6 8.6 0 0 1-2.72 1.04 4.28 4.28 0 0 0-7.3 3.9A12.14 12.14 0 0 1 3.15 4.7a4.28 4.28 0 0 0 1.32 5.72 4.24 4.24 0 0 1-1.94-.54v.05a4.28 4.28 0 0 0 3.44 4.2 4.3 4.3 0 0 1-1.93.07 4.28 4.28 0 0 0 3.99 2.97A8.58 8.58 0 0 1 2 19.54a12.1 12.1 0 0 0 6.56 1.92c7.88 0 12.2-6.53 12.2-12.2 0-.19 0-.38-.01-.57A8.7 8.7 0 0 0 24 5.2a8.5 8.5 0 0 1-2.54.7z"/>
+                </svg>
+              </span>
+              <span class="sr-only">Twitter</span>
+            </a>
+
+            <a class="iconlink" href="https://youtube.com/@inventuratech" aria-label="YouTube" target="_blank" rel="noopener">
+              <span class="ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="white" d="M23 12s0-3.4-.44-5.02A3 3 0 0 0 20.54 4.5C18.9 4.1 12 4.1 12 4.1s-6.9 0-8.54.4A3 3 0 0 0 1.44 6.98C1 8.6 1 12 1 12s0 3.4.44 5.02a3 3 0 0 0 2.02 2.48c1.64.4 8.54.4 8.54.4s6.9 0 8.54-.4a3 3 0 0 0 2.02-2.48C23 15.4 23 12 23 12zM10 15.5v-7l6 3.5-6 3.5z"/>
+                </svg>
+              </span>
+              <span class="sr-only">YouTube</span>
+            </a>
+
+            <a class="iconlink" href="https://facebook.com/inventuratech" aria-label="Facebook" target="_blank" rel="noopener">
+              <span class="ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="white" d="M13.5 21v-7.25H16l.4-3.25h-2.9V8.3c0-.94.26-1.58 1.6-1.58h1.71V3.8c-.3-.04-1.32-.12-2.5-.12-2.47 0-4.16 1.5-4.16 4.25v2.32H7v3.25h3.15V21h3.35z"/>
+                </svg>
+              </span>
+              <span class="sr-only">Facebook</span>
+            </a>
+          </nav>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const wrapper = document.getElementById('wrapper');
+    const backdrop = document.getElementById('sb-backdrop');
+    const toggleBtn = document.getElementById('menu-toggle');
+
+    if (toggleBtn) toggleBtn.addEventListener('click', () => wrapper.classList.toggle('toggled'));
+    if (backdrop) backdrop.addEventListener('click', () => wrapper.classList.remove('toggled'));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && !e.target.matches('input, textarea')) {
+        e.preventDefault();
+        const modal = new bootstrap.Modal(document.getElementById('globalSearchModal'));
+        modal.show();
+        setTimeout(() => {
+          const input = document.querySelector('#globalSearchModal input[name="q"]');
+          if (input) input.focus();
+        }, 150);
+      }
+    });
+  </script>
+</body>
+</html>

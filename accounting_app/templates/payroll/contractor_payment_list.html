@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">👷 Contractor Payment List</h2>
+    {% if request.user.role == "Accountant" %}
+      <a href="{% url 'create_payroll' %}" class="btn btn-primary">➕ Add Contractor Payment</a>
+    {% endif %}
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-light">
+        <tr class="text-center">
+          <th>Contractor</th>
+          <th>Date</th>
+          {% comment %} <th>Basic</th>
+          <th>Allowances</th>
+          <th>Overtime</th> {% endcomment %}
+          <th>Gross Amount</th>
+          <th>TDS (10%)</th>
+          <th>Net Salary</th>
+          <th>Description</th>
+          <th>Salary Slip</th>
+          <th>View Filing</th>
+          <th>Payment Status</th>
+          {% if request.user.role == "Accountant" %}
+            <th>Action</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% if payments %}
+          {% for payment in payments %}
+          <tr class="text-center">
+            <td>{{ payment.name }}</td>
+            <td>{{ payment.date|date:"M d, Y" }}</td>
+
+            {# pull from helper methods or fallback #}
+            {% comment %} <td>₹{{ payment.basic_salary_amount|default:"0.00" }}</td>
+            <td>₹{{ payment.other_allowances|default:"0.00" }}</td>
+            <td>
+              {% if payment.overtime_hours and payment.overtime_rate %}
+                ₹{{ payment.overtime_hours|floatformat:2 }} × {{ payment.overtime_rate|floatformat:2 }}
+                = ₹{{ payment.overtime_hours|floatformat:2|add:"0"|floatformat:2|default:"0.00" }}
+              {% else %}
+                ₹0.00
+              {% endif %}
+            </td> {% endcomment %}
+
+            <td><strong>₹{{ payment.amount }}</strong></td>
+            <td>₹{{ payment.tds_dynamic }}</td>
+            <td><strong>₹{{ payment.net_paid }}</strong></td>
+            <td>{{ payment.description|default:"—" }}</td>
+
+            <td>
+              <a href="{% url 'contractor_salary_slip' pk=payment.id %}" class="btn btn-sm btn-outline-primary">Slip</a>
+            </td>
+            <td>
+              {% if payment.id %}
+                <a href="{% url 'contractor_filing_list' contractor_payment_id=payment.id %}" class="btn btn-sm btn-info">View</a>
+              {% endif %}
+            </td>
+            <td>
+              {% if payment.is_paid %}
+                <span class="badge bg-success">✅ Paid</span>
+              {% else %}
+                <span class="badge bg-danger">❌ Not Paid</span>
+              {% endif %}
+            </td>
+
+            {% if request.user.role == "Accountant" %}
+            <td>
+              {% if not payment.is_paid %}
+                <form action="{% url 'mark_contractor_payroll_paid' payment.pk %}" method="POST" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-success">Mark as Paid</button>
+                </form>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="13" class="text-center text-muted">No contractor payments found.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+

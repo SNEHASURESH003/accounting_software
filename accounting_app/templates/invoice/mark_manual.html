@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block 'content' %}
+ <div class="form-actions">
+     
+      <a href="{% url 'quote_list' %}" class="btn btn-secondary">← Back to Quotes</a>
+         <a href="{% url 'revenue_dashboard' %}" class="btn btn-secondary">← Back to Revenues</a>
+ </div>
+<h3>Confirm Manual Payment</h3>
+<p>Invoice Amount: ₹{{ invoice.total_amount }}</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-success">Confirm Payment</button>
+</form>
+{% endblock %}

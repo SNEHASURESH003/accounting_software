@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+<style>
+  .form-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+  }
+
+  .form-container h2 {
+    font-size: 26px;
+    margin-bottom: 24px;
+    color: #333;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #444;
+  }
+
+  .required-star {
+    color: red;
+    margin-left: 4px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #f9fafb;
+    font-size: 14px;
+  }
+
+  .form-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4f46e5;
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+  }
+
+  .form-container button:hover {
+    background-color: #3730a3;
+  }
+</style>
+
+<div class="form-container">
+  <h2>➕ Add What-If Scenario</h2>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">
+          {{ field.label }}
+          {% if field.field.required %}
+            <span class="required-star">*</span>
+          {% endif %}
+        </label>
+        {{ field }}
+        {% if field.help_text %}
+          <small style="color: #666;">{{ field.help_text }}</small>
+        {% endif %}
+        {% for error in field.errors %}
+          <div style="color: red; font-size: 13px;">{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <button type="submit">Save</button>
+  </form>
+</div>
+{% endblock %}

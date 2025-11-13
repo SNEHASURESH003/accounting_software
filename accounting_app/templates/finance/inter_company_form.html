@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+<style>
+  .form-container {
+    max-width: 500px;
+    margin: 60px auto;
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e0e0e0;
+  }
+
+  .form-container h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #555;
+  }
+
+  .form-group label.required::after {
+    content: " *";
+    color: red;
+    margin-left: 4px;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #467fd0;
+    box-shadow: 0 0 0 3px rgba(70,127,208,0.1);
+  }
+
+  .submit-btn {
+    background: #467fd0;
+    color: #fff;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s ease;
+  }
+
+  .submit-btn:hover {
+    background: #3a6fb3;
+  }
+</style>
+
+<div class="form-container">
+  <h2>🔁 Add Inter-Company Transaction</h2>
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="id_from_company" class="required">From Company</label>
+      {{ form.from_company.as_widget }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_to_company" class="required">To Company</label>
+      {{ form.to_company.as_widget }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_amount" class="required">Amount</label>
+      {{ form.amount.as_widget }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_date" class="required">Date</label>
+      {{ form.date.as_widget }}
+    </div>
+
+    <button type="submit" class="submit-btn">💾 Save Transaction</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+<!-- templates/reports/detailed_cash_flow_pdf.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 30px;
+      font-size: 13px;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+
+    h4 {
+      font-size: 15px;
+      margin-top: 24px;
+      border-bottom: 1px solid #999;
+      padding-bottom: 4px;
+      color: #1a1a1a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+
+    .summary {
+      background-color: #eef7ff;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📊 Cash Flow Statement</h2>
+
+  <!-- Operating Activities -->
+  <h4>Operating Activities</h4>
+  <table>
+    <tr><td>Revenue Inflows</td><td>INR {{ operating_inflows }}</td></tr>
+    <tr><td>Operating Expenses</td><td>INR {{ operating_outflows }}</td></tr>
+    <tr><td>Payroll Paid</td><td>INR {{ payroll_out }}</td></tr>
+    <tr><td>Contractor Payments</td><td>INR {{ contractor_out }}</td></tr>
+    <tr class="bold"><td>Net Operating Cash</td><td>INR {{ net_operating }}</td></tr>
+  </table>
+
+  <!-- Investing Activities -->
+  <h4>Investing Activities</h4>
+  <table>
+    <tr><td>Asset Purchases</td><td>INR {{ investing_out }}</td></tr>
+    <tr class="bold"><td>Net Investing Cash</td><td>INR {{ net_investing }}</td></tr>
+  </table>
+
+  <!-- Financing Activities -->
+  <h4>Financing Activities</h4>
+  <table>
+    <tr><td>Equity & Loans Received</td><td>INR {{ financing_in }}</td></tr>
+    <tr class="bold"><td>Net Financing Cash</td><td>INR {{ net_financing }}</td></tr>
+  </table>
+
+  <!-- Summary -->
+  <h4>Summary</h4>
+  <table class="summary">
+    <tr><td>Opening Cash</td><td>INR {{ opening_balance }}</td></tr>
+    <tr class="bold"><td>Net Cash Flow</td><td>INR {{ net_cash_flow }}</td></tr>
+    <tr class="bold"><td>Closing Cash</td><td>INR {{ closing_balance }}</td></tr>
+  </table>
+
+</body>
+</html>

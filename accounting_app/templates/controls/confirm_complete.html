@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Confirm Complete</title>
+</head>
+<body>
+  <h1>Confirm completion</h1>
+
+  {% if messages %}<ul>{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+
+  <p>Mark the following control task instance as complete?</p>
+  <ul>
+    <li><strong>Task:</strong> {{ instance.task.title }}</li>
+    <li><strong>Period:</strong> {{ instance.period_year }}{% if instance.period_month %}-{{ instance.period_month|stringformat:"02d" }}{% endif %}</li>
+  </ul>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, mark complete</button>
+    <a href="{% url 'controls_dashboard' %}">Cancel</a>
+  </form>
+</body>
+</html>

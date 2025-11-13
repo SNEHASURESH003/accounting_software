@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% comment %} {% load humanize %} {% endcomment %}
+{% block title %}Purchase Requisitions{% endblock %}
+
+{% block 'content' %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Purchase Requisitions</h1>
+  {% if request.user.is_superuser or request.user.role == "Accountant" %}
+    <a class="btn btn-primary" href="{% url 'pr_create' %}">+ New PR</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 table-fixed">
+        <thead class="table-light">
+          <tr>
+            <th class="w-150">Number</th>
+            <th>Requester</th>
+            <th class="w-120">Date</th>
+            <th>Project</th>
+            <th>Cost Center</th>
+            <th class="w-120">Status</th>
+            <th class="text-end w-150">Total</th>
+            <th class="w-150">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for pr in objects %}
+          <tr>
+            <td>
+              <a href="{% url 'pr_detail' pk=pr.pk %}">{{ pr.number }}</a>
+            </td>
+            <td>{{ pr.requester }}</td>
+            <td>{{ pr.date }}</td>
+            <td>{{ pr.project|default:"—" }}</td>
+            <td>{{ pr.cost_center|default:"—" }}</td>
+            <td>
+              {% if pr.status == "APPROVED" %}
+                <span class="badge text-bg-success">Approved</span>
+              {% elif pr.status == "SUBMITTED" %}
+                <span class="badge text-bg-warning">Submitted</span>
+              {% elif pr.status == "REJECTED" %}
+                <span class="badge text-bg-danger">Rejected</span>
+              {% elif pr.status == "CLOSED" %}
+                <span class="badge text-bg-secondary">Closed</span>
+              {% else %}
+                <span class="badge text-bg-info">Draft</span>
+              {% endif %}
+            </td>
+            <td class="text-end">{{ pr.total_amount|floatformat:2 }}</td>
+            <td>{{ pr.created_on }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="text-center p-4 text-muted">No requisitions yet.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

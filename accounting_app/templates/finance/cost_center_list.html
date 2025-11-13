@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+  <div class="container" style="max-width: 900px; margin: auto;">
+    <h2>COST CENTERS</h2>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      {% comment %} <input type="text" placeholder="Search cost centers..." style="padding: 0.5rem; width: 60%; border-radius: 4px; border: 1px solid #ccc;"> {% endcomment %}
+      {% if request.user.role == "Accountant" or request.user.is_superuser %}
+      <a href="{% url 'add_cost_center' %}" style="padding: 0.5rem 1rem; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">
+        + Add Cost Center
+      </a>
+      {% endif %}
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+      <thead>
+        <tr style="background-color: #f2f2f2;">
+          <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #ccc;">Code</th>
+          <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #ccc;">Name</th>
+          <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #ccc;">Description</th>
+                    <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #ccc;">Currency</th>
+          {% comment %} {% if request.user.role == "Accountant" %}
+          <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #ccc;">Actions</th>
+          {% endif %} {% endcomment %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for center in centers %}
+          <tr>
+            <td style="padding: 0.75rem; border-bottom: 1px solid #eee;">{{ center.code }}</td>
+            <td style="padding: 0.75rem; border-bottom: 1px solid #eee;">{{ center.name }}</td>
+            <td style="padding: 0.75rem; border-bottom: 1px solid #eee;">{{ center.description }}</td>
+            <td style="padding: 0.75rem; border-bottom: 1px solid #eee;">{{ center.currency }}</td>
+            {% comment %} {% if request.user.role == "Accountant" %}
+            <td style="padding: 0.75rem; border-bottom: 1px solid #eee;">
+              {% comment %} <a href="{% url 'edit_cost_center' center.id %}" style="margin-right: 10px; color: #007bff;">Edit</a> {% endcomment %}
+              {% comment %} <a href="{% url 'delete_cost_center' center.id %}" style="color: #dc3545;">Delete</a> {% endcomment %}
+            {% comment %} </td>
+             {% endif %}  {% endcomment %}
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="{% if request.user.role == 'Accountant' %}4{% else %}3{% endif %}" style="padding: 0.75rem; text-align: center;">
+              No cost centers available.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

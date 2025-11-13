@@ -1,0 +1,11 @@
+<h1>{{ account.name }}</h1>
+
+<p><strong>Type:</strong> {{ account.type }}</p>
+<p><strong>Description:</strong> {{ account.description }}</p>
+
+
+    <a href="{% url 'update_account' account.id %}">Edit</a> |
+    <a href="{% url 'delete_account' account.id %}">Delete</a>
+
+
+<a href="{% url 'account_list' %}">Back to List</a>

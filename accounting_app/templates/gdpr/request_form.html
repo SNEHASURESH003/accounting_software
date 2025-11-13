@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}GDPR Request{% endblock %}
+
+{% block 'content' %}
+<div class="container py-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="mb-4 text-primary">🔐 GDPR Request</h2>
+
+      <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <div class="mb-3">
+          <label for="request_type" class="form-label fw-bold">Select Request Type <span class="text-danger">*</span></label>
+          <select name="request_type" id="request_type" class="form-select" required>
+            <option value="" disabled selected>Select an option</option>
+            <option value="delete">🗑️ Delete My Account</option>
+            <option value="export">📥 Export My Data</option>
+          </select>
+          <div class="invalid-feedback">Please select a request type.</div>
+        </div>
+
+        <button type="submit" class="btn btn-danger">📤 Submit Request</button>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary ms-2">← Back to Dashboard</a>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Bootstrap validation
+  (function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+      .forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+          form.classList.add('was-validated')
+        }, false)
+      })
+  })()
+</script>
+{% endblock %}

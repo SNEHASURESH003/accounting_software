@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Add Product{% endblock %}
+
+{% block 'content' %}
+<style>
+  .required:after {
+    content: " *";
+    color: red;
+  }
+
+  .form-error {
+    color: red;
+    font-size: 0.875em;
+  }
+
+  .form-card {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    max-width: 600px;
+    margin: auto;
+  }
+
+  .form-card h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+</style>
+
+<div class="form-card">
+  <h1>Add Product</h1>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    
+    {% if form.non_field_errors %}
+      <div class="form-error mb-3">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="form-group">
+      <label class="required" for="{{ form.sku.id_for_label }}">{{ form.sku.label }}</label>
+      {% render_field form.sku class="form-control" %}
+      {% for error in form.sku.errors %}
+        <div class="form-error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group">
+      <label class="required" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+      {% render_field form.name class="form-control" %}
+      {% for error in form.name.errors %}
+        <div class="form-error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group">
+      <label class="required" for="{{ form.uom.id_for_label }}">{{ form.uom.label }}</label>
+      {% render_field form.uom class="form-control" %}
+      {% for error in form.uom.errors %}
+        <div class="form-error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="form-group">
+      <label class="required" for="{{ form.default_price.id_for_label }}">{{ form.default_price.label }}</label>
+      {% render_field form.default_price class="form-control" %}
+      {% for error in form.default_price.errors %}
+        <div class="form-error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">💾 Save Product</button>
+      <a href="{% url 'product_list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+

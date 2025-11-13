@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}GSTR-1 Report{% endblock %}
+
+{% block 'content' %}
+ <div class="form-actions">
+     
+      <a href="{% url 'quote_list' %}" class="btn btn-secondary">← Back to Quotes</a>
+         <a href="{% url 'compliances_dashboard' %}" class="btn btn-secondary">← Back</a>
+ </div>
+
+
+<div class="container my-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="fs-3 fw-semibold mb-4">📄 GSTR-1 Report for {{ client.name }}</h2>
+
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Month</th>
+              <th>Year</th>
+              <th>Total Sales</th>
+              <th>Taxable Value</th>
+              <th>CGST</th>
+              <th>SGST</th>
+              <th>IGST</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in gstr1 %}
+              <tr>
+                <td>{{ record.month }}</td>
+                <td>{{ record.year }}</td>
+                <td>₹{{ record.total_sales }}</td>
+                <td>₹{{ record.taxable_value }}</td>
+                <td>₹{{ record.cgst }}</td>
+                <td>₹{{ record.sgst }}</td>
+                <td>₹{{ record.igst }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-center text-muted">No records found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

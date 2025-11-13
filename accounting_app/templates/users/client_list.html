@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+<style>
+  :root{
+    --bg-head:#2c3e50;
+  }
+  .card-elevated{
+    border: 0;
+    box-shadow: 0 6px 18px rgba(0,0,0,.06);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .card-header-gradient{
+    background: linear-gradient(135deg, var(--bg-head), #3f5870);
+    color:#fff;
+  }
+  .table-nowrap td, .table-nowrap th { white-space: nowrap; }
+  .table thead th{
+    background: #f8fafc;
+    color:#334155;
+    border-bottom-width: 1px;
+    font-weight:600;
+  }
+  .table tbody tr:hover { background-color:#f6f9fc; }
+  .badge-soft{
+    background: #eef6ff;
+    color:#0b63ce;
+    border:1px solid #d7e9ff;
+    padding:.35rem .55rem;
+    font-size:.75rem;
+    border-radius:999px;
+  }
+  .btn-icon{
+    display:inline-flex; align-items:center; gap:.35rem;
+  }
+  .btn-ghost{
+    background: #fff; border:1px solid #e6eaf0; color:#1f2937;
+  }
+  .btn-ghost:hover{
+    background:#f3f6fb; color:#111827; border-color:#d9dfeb;
+  }
+  .toolbar{
+    display:flex; justify-content:space-between; align-items:center; gap:1rem;
+  }
+  @media (max-width: 768px){
+    .toolbar { flex-direction: column; align-items: stretch; }
+  }
+  .no-data {
+    text-align: center;
+    color: #6b7280;
+    font-style: italic;
+  }
+  .w-card { max-width: 1200px; margin-inline:auto; }
+</style>
+
+<div class="container py-4 w-card">
+  <div class="card card-elevated">
+    <div class="card-header card-header-gradient">
+      <div class="toolbar">
+        <h5 class="mb-0">Clients</h5>
+        <a href="{% url 'add_client' %}" class="btn btn-light btn-icon">
+          <!-- plus icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Add Client
+        </a>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-nowrap mb-0">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>GSTIN</th>
+              <th>Address</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Company</th>
+              <th>Receivable Account</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for client in clients %}
+            <tr>
+              <td>{{ client.name }}</td>
+              <td>{{ client.gstin|default:"-" }}</td>
+                 <td>{{ client.address }}</td>
+              <td>{{ client.email }}</td>
+              <td>{{ client.phone|default:"-" }}</td>
+              <td>{{ client.company|default:"-" }}</td>
+              <td>
+                {% if client.receivable_account %}
+                  <span class="badge-soft">{{ client.receivable_account.name }}</span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-2">
+                  <a href="{% url 'client_edit' client.pk %}" class="btn btn-ghost btn-sm btn-icon" title="Edit">
+                    <!-- pencil icon -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" stroke="currentColor" stroke-width="1.5" fill="currentColor"/></svg>
+                    Edit
+                  </a>
+                  <form action="{% url 'client_delete' client.pk %}" method="post" onsubmit="return confirm('Delete this client?');" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm btn-icon">
+                      <!-- trash icon -->
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="no-data py-4">No clients found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

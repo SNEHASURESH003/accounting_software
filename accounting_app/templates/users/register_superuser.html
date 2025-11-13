@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block 'content' %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh; background-color: #f8f9fa;">
+  <div class="card shadow-lg border-0 rounded-4" style="width: 100%; max-width: 500px;">
+    <div class="card-body p-4">
+
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <h3 class="text-center mb-4 fw-bold">Create Admin</h3>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="form-label">
+            {{ form.email.label }}{% if form.email.field.required %}<span class="text-danger"> *</span>{% endif %}
+          </label>
+          {{ form.email|add_class:"form-control" }}
+          {% if form.email.errors %}
+            <div class="text-danger small mt-1">
+              {{ form.email.errors.as_text|slice:":200" }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- First Name -->
+        <div class="mb-3">
+          <label class="form-label">
+            {{ form.first_name.label }}{% if form.first_name.field.required %}<span class="text-danger"> *</span>{% endif %}
+          </label>
+          {{ form.first_name|add_class:"form-control" }}
+          {% if form.first_name.errors %}
+            <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Last Name -->
+        <div class="mb-3">
+          <label class="form-label">
+            {{ form.last_name.label }}{% if form.last_name.field.required %}<span class="text-danger"> *</span>{% endif %}
+          </label>
+          {{ form.last_name|add_class:"form-control" }}
+          {% if form.last_name.errors %}
+            <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label">
+            {{ form.password1.label }}{% if form.password1.field.required %}<span class="text-danger"> *</span>{% endif %}
+          </label>
+          {{ form.password1|add_class:"form-control" }}
+          {% if form.password1.errors %}
+            <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mb-3">
+          <label class="form-label">
+            {{ form.password2.label }}{% if form.password2.field.required %}<span class="text-danger"> *</span>{% endif %}
+          </label>
+          {{ form.password2|add_class:"form-control" }}
+          {% if form.password2.errors %}
+            <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Submit -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg rounded-3">
+            <i class="bi bi-person-plus"></i> Create
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+

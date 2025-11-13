@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block 'content' %}
+<h1 class="mb-4" style="font-weight:700; color:#1a202c;">Available Plans</h1>
+
+<div class="plans-container" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:24px;">
+  {% for plan in plans %}
+    <div class="plan-card" style="
+          background-color:#ffffff;
+          border-radius:16px;
+          box-shadow:0 4px 12px rgba(0,0,0,0.08);
+          padding:20px;
+          transition:transform 0.2s, box-shadow 0.2s;">
+      <h2 style="font-size:1.5rem; font-weight:700; color:#111827; margin-bottom:8px;">{{ plan.name }}</h2>
+      <p style="color:#4b5563; margin-bottom:12px;">{{ plan.description }}</p>
+      <p style="font-weight:600; color:#111827; margin-bottom:8px;">Price: ${{ plan.price }} / {{ plan.interval|default:"month" }}</p>
+      {% if plan.trial_days %}
+        <p style="font-size:0.9rem; color:#6b7280; margin-bottom:12px;">Trial: {{ plan.trial_days }} days</p>
+      {% endif %}
+
+      {% if plan.is_subscribed_by_group %}
+        <p style="color:#10b981; font-weight:600; margin-bottom:8px;">Subscribed</p>
+      {% endif %}
+      {% if plan.subscription and plan.subscription.user == user %}
+        <p style="color:#3b82f6; font-weight:500; margin-bottom:8px;">You are subscribed to this plan</p>
+      {% endif %}
+
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+        {% if plan.can_change_subscription %}
+          <form method="post" action="{% url 'subscribe' plan.id %}" style="flex:1">
+            {% csrf_token %}
+            <button style="
+                width:100%;
+                padding:10px;
+                background-color:#3b82f6;
+                color:white;
+                border:none;
+                border-radius:8px;
+                font-weight:600;
+                cursor:pointer;
+                transition: background-color 0.2s;">
+              Subscribe
+            </button>
+          </form>
+        {% endif %}
+
+        {% if plan.is_subscribed_by_group and user.is_superuser %}
+          <form method="post" action="{% url 'manual_renew' sub_id=plan.subscription.id %}" style="flex:1">
+            {% csrf_token %}
+            <button style="
+                width:100%;
+                padding:10px;
+                background-color:#10b981;
+                color:white;
+                border:none;
+                border-radius:8px;
+                font-weight:600;
+                cursor:pointer;
+                transition: background-color 0.2s;">
+              Renew
+            </button>
+          </form>
+        {% endif %}
+
+        {% if user.is_superuser %}
+          <form method="post" action="{% url 'delete_plan' plan.id %}" style="flex:1">
+            {% csrf_token %}
+            <button type="submit" style="
+                width:100%;
+                padding:10px;
+                background-color:#ef4444;
+                color:white;
+                border:none;
+                border-radius:8px;
+                font-weight:600;
+                cursor:pointer;
+                transition: background-color 0.2s;"
+                onclick="return confirm('Are you sure you want to delete this plan?');">
+              Delete
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <p style="color:#6b7280; font-style:italic;">No plans available for your group.</p>
+  {% endfor %}
+</div>
+
+<style>
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+button:hover {
+  opacity:0.9;
+}
+</style>
+{% endblock %}

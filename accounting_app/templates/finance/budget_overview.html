@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block 'content' %}
+{# Optional: enable separators -> {{ b.amount|floatformat:2|intcomma }} #}
+{# {% load humanize %} #}
+
+<style>
+  /* --- Card shell --- */
+  .budget-card{
+    max-width:1100px; margin:60px auto;
+    background:#fff; padding:30px 40px;
+    border-radius:12px; border:1px solid #e0e0e0;
+    box-shadow:0 12px 28px rgba(0,0,0,.06);
+  }
+
+  /* --- Header bar --- */
+  .budget-bar{
+    display:flex; justify-content:space-between; align-items:center;
+    gap:12px; margin-bottom:18px;
+  }
+  .budget-title{
+    margin:0; font-size:28px; font-weight:700; color:#1e293b;
+    letter-spacing:.2px;
+  }
+  .btn-print-all{
+    font-weight:600; font-size:14px; padding:.55rem 1rem; border-radius:10px;
+    border:none; color:#fff; background:linear-gradient(90deg,#1e3a8a,#2563eb);
+    box-shadow:0 8px 18px rgba(37,99,235,.25);
+    white-space:nowrap;
+  }
+  .btn-print-all:hover{ filter:brightness(.95); }
+
+  /* --- Table --- */
+  .budget-table{ width:100%; border-collapse:collapse; font-size:15px; }
+  .budget-table th, .budget-table td{
+    padding:12px 16px; text-align:left; border:1px solid #e5e7eb; color:#0f172a;
+  }
+
+  /* Gradient header like your other pages */
+  .budget-table thead th{ color:#fff; border-color:transparent; }
+  .budget-table thead th:nth-child(1){ background:linear-gradient(to right,#6a1b9a,#3949ab); }
+  .budget-table thead th:nth-child(2){ background:linear-gradient(to right,#3949ab,#1976d2); }
+  .budget-table thead th:nth-child(3){ background:linear-gradient(to right,#1976d2,#0288d1); }
+  .budget-table thead th:nth-child(4){ background:linear-gradient(to right,#0288d1,#26c6da); }
+
+  .budget-table tbody tr{ transition: background .18s ease; }
+  .budget-table tbody tr:nth-child(even){ background:#f9fafb; }
+  .budget-table tbody tr:hover{ background:#f1f5f9; }
+
+  /* Pagination */
+  .pagination{
+    display:flex; justify-content:center; gap:8px; margin-top:26px; flex-wrap:wrap;
+  }
+  .pagination a, .pagination span{
+    padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:14px;
+    color:#0f172a; text-decoration:none;
+  }
+  .pagination a:hover{ background:#f1f5f9; }
+  .pagination .current{ background:#dbeafe; color:#1d4ed8; font-weight:600; border-color:#93c5fd; }
+
+  /* Responsive */
+  @media (max-width:680px){
+    .budget-card{ margin:24px 12px; padding:22px; }
+    .budget-bar{ flex-direction:column; align-items:stretch; gap:10px; }
+    .btn-print-all{ width:100%; }
+  }
+
+  /* Print rules (match other reports) */
+  @media print{
+    @page { size: A4; margin: 12mm; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    header, .site-header, .navbar, .topbar, .app-header, .main-header { display:none !important; }
+    .btn-print-all, .pagination { display:none !important; }
+    .budget-card{ box-shadow:none !important; border:1px solid #ddd; page-break-inside:avoid; }
+    .budget-table thead th:nth-child(1){ background:linear-gradient(to right,#6a1b9a,#3949ab) !important; }
+    .budget-table thead th:nth-child(2){ background:linear-gradient(to right,#3949ab,#1976d2) !important; }
+    .budget-table thead th:nth-child(3){ background:linear-gradient(to right,#1976d2,#0288d1) !important; }
+    .budget-table thead th:nth-child(4){ background:linear-gradient(to right,#0288d1,#26c6da) !important; }
+  }
+</style>
+
+<div class="budget-card">
+  <div class="budget-bar">
+    <h2 class="budget-title">📘 Budget Overview</h2>
+    <button type="button" class="btn-print-all" onclick="window.print()">🖨️ Print </button>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="budget-table">
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th>Amount</th>
+          <th>Month</th>
+          <th>Project</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for b in page_obj %}
+        <tr>
+          <!-- Account / Client -->
+          <td>
+            {% if b.project.client.name %}
+              {{ b.project.client.name }}
+            {% elif b.account_name %}
+              {{ b.account_name }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+
+          <!-- Amount -->
+          <td>&#8377;{{ b.amount }}</td>
+          {# e.g. use &#8377;{{ b.amount|floatformat:2|intcomma }} if you enabled humanize #}
+
+          <!-- Month -->
+          <td>
+            {% if b.month %}
+              {% if b.month == "All" %}
+                All
+              {% else %}
+                {{ b.year }} {{ b.month|date:"M" }}
+              {% endif %}
+            {% else %}
+              All
+            {% endif %}
+          </td>
+
+          <!-- Project -->
+          <td>
+            {% if b.project.name %}
+              {{ b.project.name }}
+            {% elif b.project_name %}
+              {{ b.project_name }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-4">No budget entries for this year.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page=1">« First</a>
+      <a href="?page={{ page_obj.previous_page_number }}">‹ Prev</a>
+    {% endif %}
+    <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">Next ›</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}">Last »</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

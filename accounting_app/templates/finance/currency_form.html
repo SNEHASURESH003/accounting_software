@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block 'content' %}
+<style>
+  .form-container {
+    max-width: 500px;
+    margin: 60px auto;
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid #e0e0e0;
+  }
+
+  .form-container h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #555;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #467fd0;
+    box-shadow: 0 0 0 3px rgba(70,127,208,0.1);
+  }
+
+  .submit-btn {
+    background: #467fd0;
+    color: #fff;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s ease;
+  }
+
+  .submit-btn:hover {
+    background: #3a6fb3;
+  }
+</style>
+
+<div class="form-container">
+  <h2>➕ Add Currency</h2>
+
+  <form method="post" id="currency-form">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="id_code">Currency Code <span style="color:red">*</span></label>
+      <select name="code" id="id_code" required>
+        <option value="">----------</option>
+        <option value="USD">USD - US Dollar ($)</option>
+        <option value="EUR">EUR - Euro (€)</option>
+        <option value="INR">INR - Indian Rupee (₹)</option>
+        <option value="GBP">GBP - British Pound (£)</option>
+        <option value="JPY">JPY - Japanese Yen (¥)</option>
+        <option value="AUD">AUD - Australian Dollar (A$)</option>
+        <option value="CAD">CAD - Canadian Dollar (C$)</option>
+        <option value="CNY">CNY - Chinese Yuan (¥)</option>
+        <option value="CHF">CHF - Swiss Franc (CHF)</option>
+        <option value="SGD">SGD - Singapore Dollar (S$)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="id_name">Currency Name <span style="color:red">*</span></label>
+      <input type="text" name="name" id="id_name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="id_symbol">Currency Symbol <span style="color:red">*</span></label>
+      <input type="text" name="symbol" id="id_symbol" required>
+    </div>
+
+    <button type="submit" class="submit-btn">💾 Save Currency</button>
+  </form>
+</div>
+
+
+<script>
+  const currencyData = {
+    USD: {name: 'US Dollar', symbol: '$'},
+    EUR: {name: 'Euro', symbol: '€'},
+    INR: {name: 'Indian Rupee', symbol: '₹'},
+    GBP: {name: 'British Pound', symbol: '£'},
+    JPY: {name: 'Japanese Yen', symbol: '¥'},
+    AUD: {name: 'Australian Dollar', symbol: 'A$'},
+    CAD: {name: 'Canadian Dollar', symbol: 'C$'},
+    CNY: {name: 'Chinese Yuan', symbol: '¥'},
+    CHF: {name: 'Swiss Franc', symbol: 'CHF'},
+    SGD: {name: 'Singapore Dollar', symbol: 'S$'}
+  };
+
+  const codeField = document.getElementById('id_code');
+  const nameField = document.getElementById('id_name');
+  const symbolField = document.getElementById('id_symbol');
+
+  codeField.addEventListener('change', () => {
+    const selected = codeField.value;
+    if (currencyData[selected]) {
+      nameField.value = currencyData[selected].name;
+      symbolField.value = currencyData[selected].symbol;
+    } else {
+      nameField.value = '';
+      symbolField.value = '';
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    codeField.dispatchEvent(new Event('change'));
+  });
+</script>
+{% endblock %}
+
